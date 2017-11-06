@@ -28,7 +28,6 @@ def main(ticker):
 	data = json.loads(data.read().decode())
 	for x in data['optionChain']['result']:
 		CURRENT_VALUE = x['quote']['regularMarketPrice']
-		print(CURRENT_VALUE)
 		for y in x['options']:
 			if not y['calls']:
 				for option in y['calls']:

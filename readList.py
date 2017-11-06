@@ -1,8 +1,9 @@
-import json, urllib, optionChainRetrieval
+import json, urllib, optionChainRetrieval, time
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 def main():
+	start_time = time.time()
 	printDescription()
 	url = 'https://dimon.ca/api/snp500' # Set destination URL here
 	sessionID = getSessionID()
@@ -16,6 +17,7 @@ def main():
 		## for testing purposes if item['sym'] == "AAPL":
 			print(item['sym'])
 			optionChainRetrieval.main(item['sym'])
+	print("******** finsihed in %s seconds ********" % (time.time() -start_time))
 			
 			
 def getSessionID():
