@@ -12,8 +12,10 @@ def main():
 	request = Request(url, urlencode(post_fields).encode()) 
 	data = urlopen(request).read().decode()
 	data = json.loads(data)
+	i = 0
 	for item in data['members']:
-		print(item['sym'])
+		i = i + 1
+		print(item['sym'], " ", i)
 
 def printDescription():
 	print("Program to print ticker symbols of stocks in S and P 500 list")
