@@ -1,4 +1,4 @@
-import json, datetime, random, math, time
+import json, datetime, random, math, time, multiprocessing
 from urllib.request import urlopen
 #from operator import add
 #import matplotlib.pyplot as plt  # mathplotlib
@@ -10,10 +10,11 @@ def main(ticker):
 	volatility = .3672 			# sigma i.e. volatility of underlying stock
 	risk_free_rate = 2.1024  # mu
 	expires = 55  # Number of days until maturity date
+	pool = multiprocessing.Pool(processes=2)
 	if "." in ticker:  # some tickers in list have "." when not needed
 		ticker = ticker.replace(".", "")  # Removing "."
 	url = "https://query2.finance.yahoo.com/v7/finance/options/"
-	url += ticker
+	url += ticker+"?date=1513296000" # Hardcode date until on azure
 
 	print(url)  # Prints URL to option chain
 
@@ -30,20 +31,22 @@ def main(ticker):
 		volatility = call['impliedVolatility']
 		dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
 		expires = dt.days
-		runSimulaion(option_type, strike_price, current_value,
-					volatility, risk_free_rate, expires, ticker)
+		callResults = pool.apply_async(runSimulaion, [option_type, strike_price, current_value,
+					volatility, risk_free_rate, expires, ticker])
 
 	for put in puts:
 		option_type = "Put"
 		strike_price = put['strike']	        # S(T) price at maturity
 		volatility = put['impliedVolatility']
-		runSimulaion(option_type, strike_price, current_value,
-						volatility, risk_free_rate, expires, ticker)
+		putResults = pool.apply_async(runSimulaion, [option_type, strike_price, current_value,
+					volatility, risk_free_rate, expires, ticker])
+	
 
 
 def runSimulaion(option_type, strike_price, current_value, volatility, risk_free_rate, expires, ticker):
 	start_date = datetime.date.today()
 	num_simulations = 10000
+	output = []
 	for x in range(0, 5):
 		# W(T) Wiener process/Brownian motion  = math.sqrt(T) * random.gauss(0, 1.0)
 		# sequential approach, calculate option price every day until expiry
@@ -56,7 +59,7 @@ def runSimulaion(option_type, strike_price, current_value, volatility, risk_free
 			T = i / 365               # days in the future
 			times.append(i)
 			for j in range(num_simulations):
-					sim_results.append(sim_option_price(time.time() + j, current_value,
+				sim_results.append(sim_option_price(time.time() + j, current_value,
 										risk_free_rate, volatility, T, strike_price, option_type))
 
 			# e to the power of ()

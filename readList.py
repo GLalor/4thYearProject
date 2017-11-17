@@ -1,4 +1,5 @@
 import json, urllib, optionChainRetrieval, time
+from bs4 import BeautifulSoup 
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -25,12 +26,8 @@ def getSessionID():
 	link = 'https://dimon.ca/snp500/' # Set destination URL here
 	id = ""
 	data = urllib.request.urlopen(link)
-	data = json.dumps(data.read().decode())
-	data = json.loads(data)
-	for i in range(0,len(data)):
-		if data[(23108 + i)] == '"':
-			break
-		id += data[(23108 + i)]
+	data = BeautifulSoup(data, "html.parser")
+	id = data.find('input', attrs={'name':'session'}).get('value')
 		
 	return id
 
