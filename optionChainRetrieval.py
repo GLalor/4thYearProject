@@ -4,45 +4,40 @@ from urllib.request import urlopen
 #import matplotlib.pyplot as plt  # mathplotlib
 
 def main(ticker):
-	option_type = "not set"
-	strike_price = 0        # S(T) price at maturity
-	current_value = 0		# S(0) spot price, price of stock now
-	volatility = .3672 			# sigma i.e. volatility of underlying stock
-	risk_free_rate = 2.1024  # mu
-	expires = 55  # Number of days until maturity date
-	if "." in ticker:  # some tickers in list have "." when not needed
-		ticker = ticker.replace(".", "")  # Removing "."
-	url = "https://query2.finance.yahoo.com/v7/finance/options/"
-	url += ticker+"?date=1513296000"
+		option_type = "not set"
+		strike_price = 0        # S(T) price at maturity
+		current_value = 0		# S(0) spot price, price of stock now
+		volatility = .3672 			# sigma i.e. volatility of underlying stock
+		risk_free_rate = 2.1024  # mu
+		expires = 55  # Number of days until maturity date
+		if "." in ticker:  # some tickers in list have "." when not needed
+			ticker = ticker.replace(".", "")  # Removing "."
+		url = "https://query2.finance.yahoo.com/v7/finance/options/"
+		url += ticker+"?date=1513900800"
 
-	print(url)  # Prints URL to option chain
+		print(url)  # Prints URL to option chain
+		
+		data = urlopen(url)
+		data = json.loads(data.read().decode())
+		for item in data['optionChain']['result']:
+			current_value = item['quote']['regularMarketPrice']
+			data = item['options']
+		for option in data:
+			calls, puts = option['calls'], option['puts']
+			
+		for call in calls:
+			print("call")
+			option_type = "Call"
+			strike_price = call['strike']	        # S(T) price at maturity
+			volatility = call['impliedVolatility']
+			dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
+			expires = dt.days
+			runSimulaion(option_type, strike_price, current_value,
+							volatility, risk_free_rate, expires, ticker)
 
-	data = urlopen(url)
-	data = json.loads(data.read().decode())
-	for item in data['optionChain']['result']:
-		current_value = item['quote']['regularMarketPrice']
-		data = item['options']
-	for option in data:
-		calls, puts = option['calls'], option['puts']
-	for call in calls:
-		option_type = "Call"
-		strike_price = call['strike']	        # S(T) price at maturity
-		volatility = call['impliedVolatility']
-		dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
-		expires = dt.days
-		runSimulaion(option_type, strike_price, current_value,
-					volatility, risk_free_rate, expires, ticker)
-
-	for put in puts:
-		option_type = "Put"
-		strike_price = put['strike']	        # S(T) price at maturity
-		volatility = put['impliedVolatility']
-		runSimulaion(option_type, strike_price, current_value,
-						volatility, risk_free_rate, expires, ticker)
 
 
 def runSimulaion(option_type, strike_price, current_value, volatility, risk_free_rate, expires, ticker):
-	print("running sim  ",expires)
 	start_date = datetime.date.today()
 	num_simulations = 10000
 	for x in range(0, 5):
