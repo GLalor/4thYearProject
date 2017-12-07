@@ -1,4 +1,4 @@
-import json, urllib, optionChainRetrieval, time
+import json, urllib, optionPriceCuda, time
 from bs4 import BeautifulSoup 
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -30,8 +30,8 @@ if __name__ == "__main__":
 	data = urlopen(request).read().decode()
 	data = json.loads(data)
 	for item in data['members']:
-		if item['sym'] == "AAPL":
+		# if item['sym'] == "AAPL":
 			print(item['sym'])
-			optionChainRetrieval.main(item['sym'])
+			optionPriceCuda.main(item['sym'])
 	print("******** finsihed in %s seconds ********" % (time.time() -start_time))	
 	
