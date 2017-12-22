@@ -13,7 +13,7 @@ def main(ticker):
 	if "." in ticker:  # some tickers in list have "." when not needed
 		ticker = ticker.replace(".", "")  # Removing "."
 	url = "https://query2.finance.yahoo.com/v7/finance/options/"
-	url += ticker+"?date=1513296000"
+	url += ticker
 
 	print(url)  # Prints URL to option chain
 
