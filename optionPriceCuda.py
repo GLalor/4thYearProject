@@ -1,4 +1,4 @@
-import pycuda.autoinit, json, datetime, random, math, time
+import pycuda.autoinit, json, datetime, random, math, time, urllib
 import pycuda.driver as cuda
 from pycuda.compiler import SourceModule
 from urllib.request import urlopen
@@ -44,69 +44,79 @@ def main(ticker):
     url += ticker
 
     print(url)  # Prints URL to option chain
-
-    data = urlopen(url)
-    data = json.loads(data.read().decode())
-    for item in data['optionChain']['result']:
-        current_value = item['quote']['regularMarketPrice']
-        data = item['options']
-    for option in data:
-        calls, puts = option['calls'], option['puts']
-        
-    for call in calls:
-        option_type = "Call"
-        strike_price = call['strike']	        # S(T) price at maturity
-        volatility = call['impliedVolatility']
-        dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
-        expires = dt.days
-        for j in range(1, expires + 1): # Monte carlo Sim 10'000
-            sim_results = []
-            sim_prices = []
+    try:        # try get opion data if not print reason
+        data = urlopen(url)
+        data = json.loads(data.read().decode())
+        for item in data['optionChain']['result']:
+            current_value = item['quote']['regularMarketPrice']
+            data = item['options']
+        for option in data:
+            calls, puts = option['calls'], option['puts']
             
-            sim_results_total = 0
-            T = j/365
-            discount_factor = math.exp(-risk_free_rate * T)
-            for x in range(0, 10):
-                func(a_gpu, numpy.float32(strike_price), numpy.float32(current_value), numpy.float32(volatility), numpy.float32(risk_free_rate), numpy.float32(T), numpy.float32(random.gauss(0, 1.0)), block=(1000,1,1)) # passing arguments
-                a_doubled = numpy.empty_like(a) 
-                cuda.memcpy_dtoh(a_doubled, a_gpu) # retriving results
-                sim_results.append(a_doubled)
-                for x in range(1000):
-                    sim_results[0][x] = max(0.0, sim_results[0][x] - strike_price)
-                    sim_results_total += sim_results[0][x]
-            sim_prices.append(discount_factor * (sim_results_total / float(num_simulations)))
-            for x in sim_prices:
-                call_results[(str(start_date + datetime.timedelta(days=j)))] = (float(x))
-    results[option_type]= call_results
+        for call in calls:
+            option_type = "Call"
+            strike_price = call['strike']	        # S(T) price at maturity
+            volatility = call['impliedVolatility']
+            dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
+            expires = dt.days
+            for j in range(1, expires + 1): # Monte carlo Sim 10'000
+                sim_results = []
+                sim_prices = []
+                
+                sim_results_total = 0
+                T = j/365
+                discount_factor = math.exp(-risk_free_rate * T)
+                for x in range(0, 10):
+                    func(a_gpu, numpy.float32(strike_price), numpy.float32(current_value), numpy.float32(volatility), numpy.float32(risk_free_rate), numpy.float32(T), numpy.float32(random.gauss(0, 1.0)), block=(1000,1,1)) # passing arguments
+                    a_doubled = numpy.empty_like(a) 
+                    cuda.memcpy_dtoh(a_doubled, a_gpu) # retriving results
+                    sim_results.append(a_doubled)
+                    for x in range(1000):
+                        sim_results[0][x] = max(0.0, sim_results[0][x] - strike_price)
+                        sim_results_total += sim_results[0][x]
+                sim_prices.append(discount_factor * (sim_results_total / float(num_simulations)))
+                for x in sim_prices:
+                    call_results[(str(start_date + datetime.timedelta(days=j)))] = (float(x))
+        results[option_type]= call_results
 
-    for put in puts:
-        option_type = "Put"
-        strike_price = put['strike']	        # S(T) price at maturity
-        volatility = put['impliedVolatility']
-        dt = datetime.datetime.fromtimestamp(put['expiration']) - datetime.datetime.now()
-        expires = dt.days
-        for j in range(1, expires + 1): # Monte carlo Sim 10'000
-            sim_results = []
-            sim_prices = []
-            
-            sim_results_total = 0
-            T = j/365
-            discount_factor = math.exp(-risk_free_rate * T)
-            for x in range(0, 10):
-                func(a_gpu, numpy.float32(strike_price), numpy.float32(current_value), numpy.float32(volatility), numpy.float32(risk_free_rate), numpy.float32(T), numpy.float32(random.gauss(0, 1.0)), block=(1000,1,1)) # passing arguments
-                a_doubled = numpy.empty_like(a) 
-                cuda.memcpy_dtoh(a_doubled, a_gpu) # retriving results
-                sim_results.append(a_doubled)
-                for x in range(1000):
-                    sim_results[0][x] = max(0.0, strike_price - sim_results[0][x])
-                    sim_results_total += sim_results[0][x]
-            sim_prices.append(discount_factor * (sim_results_total / float(num_simulations)))
-            for x in sim_prices:
-                put_results[(str(start_date + datetime.timedelta(days=j)))] = (float(x))
-    results[option_type] = put_results
+        for put in puts:
+            option_type = "Put"
+            strike_price = put['strike']	        # S(T) price at maturity
+            volatility = put['impliedVolatility']
+            dt = datetime.datetime.fromtimestamp(put['expiration']) - datetime.datetime.now()
+            expires = dt.days
+            for j in range(1, expires + 1): # Monte carlo Sim 10'000
+                sim_results = []
+                sim_prices = []
+                
+                sim_results_total = 0
+                T = j/365
+                discount_factor = math.exp(-risk_free_rate * T)
+                for x in range(0, 10):
+                    func(a_gpu, numpy.float32(strike_price), numpy.float32(current_value), numpy.float32(volatility), numpy.float32(risk_free_rate), numpy.float32(T), numpy.float32(random.gauss(0, 1.0)), block=(1000,1,1)) # passing arguments
+                    a_doubled = numpy.empty_like(a) 
+                    cuda.memcpy_dtoh(a_doubled, a_gpu) # retriving results
+                    sim_results.append(a_doubled)
+                    for x in range(1000):
+                        sim_results[0][x] = max(0.0, strike_price - sim_results[0][x])
+                        sim_results_total += sim_results[0][x]
+                sim_prices.append(discount_factor * (sim_results_total / float(num_simulations)))
+                for x in sim_prices:
+                    put_results[(str(start_date + datetime.timedelta(days=j)))] = (float(x))
+        results[option_type] = put_results
 
 
-    option_prices[ticker] = results
-    with open('optionPrices.json', 'w') as outfile:
-            json.dump(option_prices,outfile)
+        option_prices[ticker] = results
+        with open('optionPrices.json', 'w') as outfile:
+                json.dump(option_prices,outfile)
+    except urllib.error.HTTPError as err:
+        if err.code == 404:
+            print("Page not found!")
+        elif err.code == 403:
+            print("Access denied!")
+        else:
+            print("Something happened! Error code", err.code)
+    except urllib.error.URLError as err:
+        print("Some other error happened:", err.reason)
+    
     print("******** GPU finsihed in %s seconds ********" % (time.time() -start_time))
