@@ -8,7 +8,7 @@ College 4th/Final year project
    - Beatifulsoup library
    
 ## TO RUN MASTER branch
-To run full program run `python readList.py`
+To run full program use `python readList.py`
 Please see sample output below
 
 ![alt text](https://github.com/GLalor/Vanilla-Option-Pricer/blob/master/output.PNG "Sample output")
@@ -18,5 +18,5 @@ Please see sample output below
   
 ## TO RUN MULTIPROSS branch
 Run code on machine with **NVidia GPU installed**
-To run full program run use `python readList.py`
+To run full program use `python readList.py`
 Output will be printed to a JSON file
