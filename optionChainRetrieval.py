@@ -1,8 +1,11 @@
-import json, datetime, random, math, time
+import json, datetime, random, math, time, urllib
 from urllib.request import urlopen
 #from operator import add
 #import matplotlib.pyplot as plt  # mathplotlib
-
+option_prices = {}
+results = {}
+call_results = {}
+put_results = {}
 def main(ticker):
 	option_type = "not set"
 	strike_price = 0        # S(T) price at maturity
@@ -10,36 +13,52 @@ def main(ticker):
 	volatility = .3672 			# sigma i.e. volatility of underlying stock
 	risk_free_rate = 2.1024  # mu
 	expires = 55  # Number of days until maturity date
+	results = {}
+	call_results = {}
+	put_results = {}
+
 	if "." in ticker:  # some tickers in list have "." when not needed
 		ticker = ticker.replace(".", "")  # Removing "."
 	url = "https://query2.finance.yahoo.com/v7/finance/options/"
-	url += ticker
+	url += ticker+"?date=1517529600"
 
 	print(url)  # Prints URL to option chain
-
-	data = urlopen(url)
-	data = json.loads(data.read().decode())
-	for item in data['optionChain']['result']:
-		current_value = item['quote']['regularMarketPrice']
-		data = item['options']
-	for option in data:
-		calls, puts = option['calls'], option['puts']
-	for call in calls:
-		option_type = "Call"
-		strike_price = call['strike']	        # S(T) price at maturity
-		volatility = call['impliedVolatility']
-		dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
-		expires = dt.days
-		runSimulaion(option_type, strike_price, current_value,
-					volatility, risk_free_rate, expires, ticker)
-
-	for put in puts:
-		option_type = "Put"
-		strike_price = put['strike']	        # S(T) price at maturity
-		volatility = put['impliedVolatility']
-		runSimulaion(option_type, strike_price, current_value,
+	try:        # try get opion data if not print reason
+		data = urlopen(url)
+		data = json.loads(data.read().decode())
+		for item in data['optionChain']['result']:
+			current_value = item['quote']['regularMarketPrice']
+			data = item['options']
+		for option in data:
+			calls, puts = option['calls'], option['puts']
+		for call in calls:
+			option_type = "Call"
+			strike_price = call['strike']	        # S(T) price at maturity
+			volatility = call['impliedVolatility']
+			dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
+			expires = dt.days
+			runSimulaion(option_type, strike_price, current_value,
 						volatility, risk_free_rate, expires, ticker)
 
+		for put in puts:
+			option_type = "Put"
+			strike_price = put['strike']	        # S(T) price at maturity
+			volatility = put['impliedVolatility']
+			runSimulaion(option_type, strike_price, current_value,
+							volatility, risk_free_rate, expires, ticker)
+		print("*********************")
+		print(option_prices)
+		with open('optionPrices.json', 'w') as outfile:
+			json.dump(call_results,outfile)
+	except urllib.error.HTTPError as err:
+		if err.code == 404:
+			print("Page not found!")
+		elif err.code == 403:
+			print("Access denied!")
+		else:
+			print("Something happened! Error code", err.code)
+	except urllib.error.URLError as err:
+		print("Some other error happened:", err.reason)
 
 def runSimulaion(option_type, strike_price, current_value, volatility, risk_free_rate, expires, ticker):
 	start_date = datetime.date.today()
@@ -63,8 +82,16 @@ def runSimulaion(option_type, strike_price, current_value, volatility, risk_free
 			discount_factor = math.exp(-risk_free_rate * T)
 			option_prices.append(
 			discount_factor * (sum(sim_results) / float(num_simulations)))
-			print(ticker, " ", option_type, " ", "Option Price ",
-				option_prices[i - 1], " at ", start_date + datetime.timedelta(days=i))
+			if option_type == "Call":
+				call_results[(str(start_date + datetime.timedelta(days=j)))] = option_prices[i - 1]
+				results[option_type]= call_results
+			#print(ticker, " ", option_type, " ", "Option Price ",
+				#option_prices[i - 1], " at ", start_date + datetime.timedelta(days=i))
+			else:
+				put_results[(str(start_date + datetime.timedelta(days=j)))] = option_prices[i - 1]
+				results[option_type]= put_results
+				#print(ticker, " ", option_type, " ", "Option Price ",
+				#option_prices[i - 1], " at ", start_date + datetime.timedelta(days=i))
 	# Code to plot results to a graph
 	# plt.plot(times, option_prices)
 	# plt.xlabel('T')
