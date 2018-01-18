@@ -1,14 +1,22 @@
 # 4thYearProject
 College 4th/Final year project 
 
+## Requirements 
+   - Nvidia Cuda libraries and tools
+   - Pycuda
+   - Numpy
+   - Beatifulsoup library
+   
 ## TO RUN MASTER branch
-Install beatifulsoup library using pip
-To run full program run readList.py
-Please see output.png to see sample output
-  ### BUG
-      If Yahoo hasnt removed a passed date "running sim -1" prints
+To run full program run `python readList.py`
+Please see sample output below
+
+![alt text](https://github.com/GLalor/Vanilla-Option-Pricer/blob/master/output.PNG "Sample output")
+
+### BUG
+  Problems can arrise if Yahoo hasnt removed a past date
+  
 ## TO RUN MULTIPROSS branch
-Install pycuda, numpy librarys using pip 
-Run code on machine with NVidia GPU installed
-To run full program run readList.py
+Run code on machine with **NVidia GPU installed**
+To run full program run use `python readList.py`
 Output will be printed to a JSON file
