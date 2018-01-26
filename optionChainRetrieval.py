@@ -28,6 +28,7 @@ def main(ticker):
 		data = json.loads(data.read().decode())
 		# Cutting down on loops
 		for item in data['optionChain']['result']:
+			print(item['quote']['regularMarketPrice'])
 			current_value = item['quote']['regularMarketPrice']
 			data = item['options']
 		for option in data:
@@ -52,9 +53,11 @@ def main(ticker):
 		option_prices[ticker] = results
 		with open('optionPrices.json', 'w') as outfile:
 			json.dump(option_prices,outfile)
+		print("~~~~~~~~~~~~~~~~~~~~~~~ FINISHED "+ticker+" ~~~~~~~~~~~~~~~~~~~~~~~")
+		return option_prices
 	except urllib.error.HTTPError as err:
 		if err.code == 404:
-			print("Page not found!")
+			print("Page not found for ticker "+ ticker +"!")
 		elif err.code == 403:
 			print("Access denied!")
 		else:
@@ -63,6 +66,7 @@ def main(ticker):
 		print("Some other error happened:", err.reason)
 
 def runSimulaion(option_type, strike_price, current_value, volatility, risk_free_rate, expires, ticker):
+	print("running sim")
 	start_date = datetime.date.today()
 	num_simulations = 10000
 	option_prices = []
