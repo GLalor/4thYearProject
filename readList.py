@@ -33,5 +33,6 @@ if __name__ == "__main__":
 		# if item['sym'] == "AAPL":
 			print(item['sym'])
 			optionPriceCuda.main(item['sym'])
+	
 	print("******** finsihed in %s seconds ********" % (time.time() -start_time))	
 	

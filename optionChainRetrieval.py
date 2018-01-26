@@ -4,18 +4,6 @@ from urllib.request import urlopen
 #import matplotlib.pyplot as plt  # mathplotlib
 
 def main(ticker):
-<<<<<<< HEAD
-	option_type = "not set"
-	strike_price = 0        # S(T) price at maturity
-	current_value = 0		# S(0) spot price, price of stock now
-	volatility = .3672 			# sigma i.e. volatility of underlying stock
-	risk_free_rate = 2.1024  # mu
-	expires = 55  # Number of days until maturity date
-	if "." in ticker:  # some tickers in list have "." when not needed
-		ticker = ticker.replace(".", "")  # Removing "."
-	url = "https://query2.finance.yahoo.com/v7/finance/options/"
-	url += ticker
-=======
 		option_type = "not set"
 		strike_price = 0        # S(T) price at maturity
 		current_value = 0		# S(0) spot price, price of stock now
@@ -26,7 +14,6 @@ def main(ticker):
 			ticker = ticker.replace(".", "")  # Removing "."
 		url = "https://query2.finance.yahoo.com/v7/finance/options/"
 		url += ticker+"?date=1513900800"
->>>>>>> 07cbdbe1ca70ff92bd24f49a397e8f4d014484d8
 
 		print(url)  # Prints URL to option chain
 		

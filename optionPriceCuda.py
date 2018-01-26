@@ -1,8 +1,14 @@
-import pycuda.autoinit, json, datetime, random, math, time, urllib
+import pycuda.autoinit, json, datetime, random, math, time, urllib, os
 import pycuda.driver as cuda
 from pycuda.compiler import SourceModule
 from urllib.request import urlopen
 import numpy
+import findspark
+
+findspark.init("C:\spark-2.2.1-bin-hadoop2.7")
+from pyspark.sql import SparkSession
+
+sparkSession = SparkSession.builder.appName("option-pricer-write-to-hadoop").getOrCreate()
 
 option_prices = {}
 
@@ -41,7 +47,7 @@ def main(ticker):
     if "." in ticker:  # some tickers in list have "." when not needed
         ticker = ticker.replace(".", "")  # Removing "."
     url = "https://query2.finance.yahoo.com/v7/finance/options/"
-    url += ticker
+    url += ticker+"?date=1517529600"
 
     print(url)  # Prints URL to option chain
     try:        # try get opion data if not print reason
@@ -107,8 +113,17 @@ def main(ticker):
 
 
         option_prices[ticker] = results
-        with open('optionPrices.json', 'w') as outfile:
+        with open('C:/Users/graha/Documents/FinalYearProject/optionPrices.json', 'w') as outfile:
                 json.dump(option_prices,outfile)
+
+        # Writing to hdfs
+        
+        df = sparkSession.read.json('C:/Users/graha/Documents/FinalYearProject/optionPrices.json')
+        df.show()
+        df.write.text('/Users/graha/Documents/FinalYearProject') ## df is an existing DataFrame object.
+        #df.write.json("hdfs://cluster/user/hdfs/test/optionPrices.json")
+        # os.system(' hadoop fs -put optionPrices.json /hadoop-2.7.5/hadoop-2.7.5/data/')
+    
     except urllib.error.HTTPError as err:
         if err.code == 404:
             print("Page not found!")
