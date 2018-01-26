@@ -17,43 +17,48 @@ def main(ticker):
 	risk_free_rate = 2.1024  # mu
 	expires = 55  # Number of days until maturity date
 
-	if "." in ticker:  # some tickers in list have "." when not needed
-		ticker = ticker.replace(".", "")  # Removing "."
-	url = "https://query2.finance.yahoo.com/v7/finance/options/"
-	url += ticker+"?date=1516924800"
+	try: # Handle page not found exceptions
+		if "." in ticker:  # some tickers in list have "." when not needed
+			ticker = ticker.replace(".", "")  # Removing "."
+		url = "https://query2.finance.yahoo.com/v7/finance/options/"
+		url += ticker + "?date=1517529600"
 
-	print(url)  # Prints URL to option chain
-	try:        # try get opion data if not print reason
+		print(url)  # Prints URL to option chain
 		data = urlopen(url)
 		data = json.loads(data.read().decode())
 		# Cutting down on loops
 		for item in data['optionChain']['result']:
-			print(item['quote']['regularMarketPrice'])
-			current_value = item['quote']['regularMarketPrice']
-			data = item['options']
-		for option in data:
-			calls, puts = option['calls'], option['puts']
-		# Assigning variables for calc and running sim
-		for call in calls:
-			option_type = "Call"
-			strike_price = call['strike']	        # S(T) price at maturity
-			volatility = call['impliedVolatility']
-			dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
-			expires = dt.days
-			runSimulaion(option_type, strike_price, current_value,
-						volatility, risk_free_rate, expires, ticker)
+			if "regularMarketPrice" in item['quote']: # Test if is regularMarketPrice present will move to check if date is present in experationDates when working with dates 
+				current_value = item['quote']['regularMarketPrice']
+				data = item['options']
+				for option in data:
+					calls, puts = option['calls'], option['puts']
+				# Assigning variables for calc and running sim
+				for call in calls:
+					option_type = "Call"
+					strike_price = call['strike']	        # S(T) price at maturity
+					volatility = call['impliedVolatility']
+					dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
+					expires = dt.days
+					runSimulaion(option_type, strike_price, current_value,
+								volatility, risk_free_rate, expires, ticker)
+					results[option_type] = call_results
+				for put in puts:
+					option_type = "Put"
+					strike_price = put['strike']	        # S(T) price at maturity
+					volatility = put['impliedVolatility']
+					runSimulaion(option_type, strike_price, current_value,
+									volatility, risk_free_rate, expires, ticker)
+					results[option_type] = put_results
+				option_prices[ticker] = results
+		else:
+			call_results['NA'] = "MISSING DATA"
+			put_results['NA'] = "MISSING DATA"
 			results[option_type] = call_results
-		for put in puts:
-			option_type = "Put"
-			strike_price = put['strike']	        # S(T) price at maturity
-			volatility = put['impliedVolatility']
-			runSimulaion(option_type, strike_price, current_value,
-							volatility, risk_free_rate, expires, ticker)
 			results[option_type] = put_results
-		option_prices[ticker] = results
+			option_prices[ticker] = results
 		with open('optionPrices.json', 'w') as outfile:
 			json.dump(option_prices,outfile)
-		print("~~~~~~~~~~~~~~~~~~~~~~~ FINISHED "+ticker+" ~~~~~~~~~~~~~~~~~~~~~~~")
 		return option_prices
 	except urllib.error.HTTPError as err:
 		if err.code == 404:
@@ -64,9 +69,9 @@ def main(ticker):
 			print("Something happened! Error code", err.code)
 	except urllib.error.URLError as err:
 		print("Some other error happened:", err.reason)
+		
 
 def runSimulaion(option_type, strike_price, current_value, volatility, risk_free_rate, expires, ticker):
-	print("running sim")
 	start_date = datetime.date.today()
 	num_simulations = 10000
 	option_prices = []

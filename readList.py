@@ -7,7 +7,7 @@ findspark.init("C:\spark-2.2.1-bin-hadoop2.7")
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 # Starting and configuring spark session
-conf = SparkConf().setMaster("local[2]").setAppName('OptionPricer')
+conf = SparkConf().setMaster("local[4]").setAppName('OptionPricer')
 # spark = SparkSession \
 #     .builder \
 #     .appName("Spark opion pricer") \
@@ -33,6 +33,9 @@ def main():
 			json.dump(data,outfile)
 	for item in data['members']:
 		symbols.append(item['sym'])
+		# Use line below to test option errors
+		#optionChainRetrieval.main(item['sym'])
+	
 	symbols = sc.parallelize(symbols)
 	#print(symbols.collect())
 	result = symbols.map(lambda sym: optionChainRetrieval.main(sym))

@@ -1,0 +1,9 @@
+NOT OPTIMIZED BIG O
+
+for experationDates in data['optionChain']['result']['expirationDates']:
+		dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
+		if dt.days > 0:
+			url = "https://query2.finance.yahoo.com/v7/finance/options/"
+			url += ticker
+			optionData = urlopen(url)
+			optionData = json.loads(optionData.read().decode())
