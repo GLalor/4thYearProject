@@ -1,49 +1,85 @@
-import json, datetime, random, math, time
+import json, datetime, random, math, time, urllib
 from urllib.request import urlopen
 #from operator import add
 #import matplotlib.pyplot as plt  # mathplotlib
 
+#Dictionaries for json output
+option_prices = {}
+results = {}
+call_results = {}
+put_results = {}
+
 def main(ticker):
-		option_type = "not set"
-		strike_price = 0        # S(T) price at maturity
-		current_value = 0		# S(0) spot price, price of stock now
-		volatility = .3672 			# sigma i.e. volatility of underlying stock
-		risk_free_rate = 2.1024  # mu
-		expires = 55  # Number of days until maturity date
+	option_type = "not set"
+	strike_price = 0        # S(T) price at maturity
+	current_value = 0		# S(0) spot price, price of stock now
+	volatility = .3672 			# sigma i.e. volatility of underlying stock
+	risk_free_rate = 2.1024  # mu
+	expires = 55  # Number of days until maturity date
+
+	try: # Handle page not found exceptions
 		if "." in ticker:  # some tickers in list have "." when not needed
 			ticker = ticker.replace(".", "")  # Removing "."
 		url = "https://query2.finance.yahoo.com/v7/finance/options/"
-		url += ticker+"?date=1513900800"
+		url += ticker + "?date=1517529600"
 
 		print(url)  # Prints URL to option chain
-		
 		data = urlopen(url)
 		data = json.loads(data.read().decode())
+		# Cutting down on loops
 		for item in data['optionChain']['result']:
-			current_value = item['quote']['regularMarketPrice']
-			data = item['options']
-		for option in data:
-			calls, puts = option['calls'], option['puts']
+			if "regularMarketPrice" in item['quote']: # Test if is regularMarketPrice present will move to check if date is present in experationDates when working with dates 
+				current_value = item['quote']['regularMarketPrice']
+				data = item['options']
+				for option in data:
+					calls, puts = option['calls'], option['puts']
+				# Assigning variables for calc and running sim
+				for call in calls:
+					option_type = "Call"
+					strike_price = call['strike']	        # S(T) price at maturity
+					volatility = call['impliedVolatility']
+					dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
+					expires = dt.days
+					runSimulaion(option_type, strike_price, current_value,
+								volatility, risk_free_rate, expires, ticker)
+					results[option_type] = call_results
+				for put in puts:
+					option_type = "Put"
+					strike_price = put['strike']	        # S(T) price at maturity
+					volatility = put['impliedVolatility']
+					runSimulaion(option_type, strike_price, current_value,
+									volatility, risk_free_rate, expires, ticker)
+					results[option_type] = put_results
+				option_prices[ticker] = results
+		else:
+			call_results['NA'] = "MISSING DATA"
+			put_results['NA'] = "MISSING DATA"
+			results[option_type] = call_results
+			results[option_type] = put_results
+			option_prices[ticker] = results
 			
-		for call in calls:
-			print("call")
-			option_type = "Call"
-			strike_price = call['strike']	        # S(T) price at maturity
-			volatility = call['impliedVolatility']
-			dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
-			expires = dt.days
-			runSimulaion(option_type, strike_price, current_value,
-							volatility, risk_free_rate, expires, ticker)
-
-
+		with open('optionPrices.json', 'w') as outfile:
+			json.dump(option_prices,outfile)
+		return option_prices
+	except urllib.error.HTTPError as err:
+		if err.code == 404:
+			print("Page not found for ticker "+ ticker +"!")
+		elif err.code == 403:
+			print("Access denied!")
+		else:
+			print("Something happened! Error code", err.code)
+	except urllib.error.URLError as err:
+		print("Some other error happened:", err.reason)
+		
 
 def runSimulaion(option_type, strike_price, current_value, volatility, risk_free_rate, expires, ticker):
 	start_date = datetime.date.today()
 	num_simulations = 10000
+	option_prices = []
 	for x in range(0, 5):
 		# W(T) Wiener process/Brownian motion  = math.sqrt(T) * random.gauss(0, 1.0)
 		# sequential approach, calculate option price every day until expiry
-		option_prices = []
+		
 		times = []
 		# 1 .. expires inclusive
 		for i in range(1, expires + 1):
@@ -57,11 +93,17 @@ def runSimulaion(option_type, strike_price, current_value, volatility, risk_free
 
 			# e to the power of ()
 			discount_factor = math.exp(-risk_free_rate * T)
-			print(sum(sim_results) )
 			option_prices.append(
 			discount_factor * (sum(sim_results) / float(num_simulations)))
-			# print(ticker, " ", option_type, " ", "Option Price ",
-			# 	option_prices[i - 1], " at ", start_date + datetime.timedelta(days=i))
+			if option_type == "Call":
+				call_results[(str(start_date + datetime.timedelta(days=i)))] = option_prices
+				#print(ticker, " ", option_type, " ", "Option Price ",
+				#option_prices[i - 1], " at ", start_date + datetime.timedelta(days=i))
+			else:
+				put_results[(str(start_date + datetime.timedelta(days=i)))] = option_prices
+				#print(ticker, " ", option_type, " ", "Option Price ",
+				#option_prices[i - 1], " at ", start_date + datetime.timedelta(days=i))
+
 	# Code to plot results to a graph
 	# plt.plot(times, option_prices)
 	# plt.xlabel('T')
