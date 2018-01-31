@@ -7,6 +7,7 @@ import findspark
 
 findspark.init("C:\spark-2.2.1-bin-hadoop2.7")
 from pyspark.sql import SparkSession
+from pyspark.sql.types import *
 
 sparkSession = SparkSession.builder.appName("option-pricer-write-to-hadoop").getOrCreate()
 
@@ -47,7 +48,7 @@ def main(ticker):
     if "." in ticker:  # some tickers in list have "." when not needed
         ticker = ticker.replace(".", "")  # Removing "."
     url = "https://query2.finance.yahoo.com/v7/finance/options/"
-    url += ticker+"?date=1517529600"
+    url += ticker+"?date=1518134400"
 
     print(url)  # Prints URL to option chain
     try:        # try get opion data if not print reason
@@ -113,12 +114,14 @@ def main(ticker):
 
 
         option_prices[ticker] = results
-        with open('C:/Users/graha/Documents/FinalYearProject/optionPrices.json', 'w') as outfile:
-                json.dump(option_prices,outfile)
+        schema = DataType.fromJson(option_prices).asInstanceOf[StructType]
+        df = sparkSession.createDataFrame(option_prices, schema)
+        # with open('C:/Users/graha/Documents/FinalYearProject/optionPrices.json', 'w') as outfile:
+        #         json.dump(option_prices,outfile)
 
         # Writing to hdfs
         
-        df = sparkSession.read.json('C:/Users/graha/Documents/FinalYearProject/optionPrices.json')
+        #df = sparkSession.read.json('C:/Users/graha/Documents/FinalYearProject/optionPrices.json')
         df.show()
         df.write.text('/Users/graha/Documents/FinalYearProject') ## df is an existing DataFrame object.
         #df.write.json("hdfs://cluster/user/hdfs/test/optionPrices.json")
