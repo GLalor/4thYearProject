@@ -114,19 +114,12 @@ def main(ticker):
 
 
         option_prices[ticker] = results
-        schema = DataType.fromJson(option_prices).asInstanceOf[StructType]
-        df = sparkSession.createDataFrame(option_prices, schema)
-        # with open('C:/Users/graha/Documents/FinalYearProject/optionPrices.json', 'w') as outfile:
-        #         json.dump(option_prices,outfile)
-
-        # Writing to hdfs
+        with open('optionPrices.json', 'w') as outfile:
+                json.dump(option_prices,outfile)
         
-        #df = sparkSession.read.json('C:/Users/graha/Documents/FinalYearProject/optionPrices.json')
-        df.show()
-        df.write.text('/Users/graha/Documents/FinalYearProject') ## df is an existing DataFrame object.
-        #df.write.json("hdfs://cluster/user/hdfs/test/optionPrices.json")
-        # os.system(' hadoop fs -put optionPrices.json /hadoop-2.7.5/hadoop-2.7.5/data/')
-    
+        writeResultHive()
+        
+
     except urllib.error.HTTPError as err:
         if err.code == 404:
             print("Page not found!")
@@ -138,3 +131,13 @@ def main(ticker):
         print("Some other error happened:", err.reason)
     
     print("******** GPU finsihed in %s seconds ********" % (time.time() -start_time))
+
+def writeResultHive():
+    option_prices_data = sparkSession.read.json('optionPrices.json')
+    option_prices_data.createOrReplaceTempView("option_prices_data")
+    option_prices_data.cache()
+    sparkSession.sql("DROP TABLE IF EXISTS option_prices_data_table")
+    sparkSession.table("option_prices_data").write.saveAsTable("option_prices_data_table")
+    #  USE TO TEST DB
+    # resultsHiveDF = sparkSession.sql("SELECT * FROM option_prices_data_table")
+    # resultsHiveDF.show(1)
