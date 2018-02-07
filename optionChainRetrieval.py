@@ -26,7 +26,7 @@ def main(ticker):
 		strike_price = call['strike']	        # S(T) price at maturity
 		volatility = call['impliedVolatility']
 		dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
-		expires = dt.days
+		expires = dt.days + 1 # adding one as doesnt account for current day
 		runSimulaion(option_type, strike_price, current_value,
 					volatility, risk_free_rate, expires, ticker)
 
@@ -34,6 +34,8 @@ def main(ticker):
 		option_type = "Put"
 		strike_price = put['strike']	        # S(T) price at maturity
 		volatility = put['impliedVolatility']
+		dt = datetime.datetime.fromtimestamp(put['expiration']) - datetime.datetime.now()
+		expires = dt.days + 1 # adding one as doesnt account for current day
 		runSimulaion(option_type, strike_price, current_value,
 						volatility, risk_free_rate, expires, ticker)
 
