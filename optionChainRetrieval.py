@@ -1,7 +1,19 @@
-import json, datetime, random, math, time, urllib
+import json, datetime, random, math, time, urllib, os
 from urllib.request import urlopen
 #from operator import add
 #import matplotlib.pyplot as plt  # mathplotlib
+
+import findspark
+
+findspark.init("C:\spark-2.2.1-bin-hadoop2.7")
+from pyspark.sql import SparkSession
+from pyspark.sql.types import *
+sparkSession = SparkSession.builder.appName("option-pricer-write-to-hadoop").getOrCreate()
+#Dictionaries for json output
+option_prices = {}
+results = {}
+call_results = {}
+put_results = {}
 
 def main(ticker):
 	option_type = "not set"
@@ -11,42 +23,66 @@ def main(ticker):
 	risk_free_rate = 2.1024  # mu
 	expires = 55  # Number of days until maturity date
 
-	url = createYahooUrl(ticker)
-	print(url)  # Prints URL to option chain
+	try: # Handle page not found exceptions
+		url = createYahooUrl(ticker)
+		print(url)  # Prints URL to option chain
+		data = urlopen(url)
+		data = json.loads(data.read().decode())
+		# Cutting down on loops
+		for item in data['optionChain']['result']:
+			if "regularMarketPrice" in item['quote']: # Test if is regularMarketPrice present will move to check if date is present in experationDates when working with dates 
+				current_value = item['quote']['regularMarketPrice']
+				data = item['options']
+				for option in data:
+					calls, puts = option['calls'], option['puts']
+				# Assigning variables for calc and running sim
+				for call in calls:
+					option_type = "Call"
+					strike_price = call['strike']	        # S(T) price at maturity
+					volatility = call['impliedVolatility']
+					dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
+					expires = dt.days
+					runSimulaion(option_type, strike_price, current_value,
+								volatility, risk_free_rate, expires, ticker)
+					results[option_type] = call_results
+				for put in puts:
+					option_type = "Put"
+					strike_price = put['strike']	        # S(T) price at maturity
+					volatility = put['impliedVolatility']
+					runSimulaion(option_type, strike_price, current_value,
+									volatility, risk_free_rate, expires, ticker)
+					results[option_type] = put_results
+				option_prices[ticker] = results
+			else:
+				call_results['NA'] = "MISSING DATA"
+				put_results['NA'] = "MISSING DATA"
+				results[option_type] = call_results
+				results[option_type] = put_results
+				option_prices[ticker] = results
+		with open('optionPrices.json', 'w') as outfile:
+			json.dump(option_prices,outfile)
+		
+		writeResultHive()
 
-	data = urlopen(url)
-	data = json.loads(data.read().decode())
-	for item in data['optionChain']['result']:
-		current_value = item['quote']['regularMarketPrice']
-		data = item['options']
-	for option in data:
-		calls, puts = option['calls'], option['puts']
-	for call in calls:
-		option_type = "Call"
-		strike_price = call['strike']	        # S(T) price at maturity
-		volatility = call['impliedVolatility']
-		dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
-		expires = dt.days + 1 # adding one as doesnt account for current day
-		runSimulaion(option_type, strike_price, current_value,
-					volatility, risk_free_rate, expires, ticker)
-
-	for put in puts:
-		option_type = "Put"
-		strike_price = put['strike']	        # S(T) price at maturity
-		volatility = put['impliedVolatility']
-		dt = datetime.datetime.fromtimestamp(put['expiration']) - datetime.datetime.now()
-		expires = dt.days + 1 # adding one as doesnt account for current day
-		runSimulaion(option_type, strike_price, current_value,
-						volatility, risk_free_rate, expires, ticker)
-
+	except urllib.error.HTTPError as err:
+		if err.code == 404:
+			print("Page not found for ticker "+ ticker +"!")
+		elif err.code == 403:
+			print("Access denied!")
+		else:
+			print("Something happened! Error code", err.code)
+	except urllib.error.URLError as err:
+		print("Some other error happened:", err.reason)
+		
 
 def runSimulaion(option_type, strike_price, current_value, volatility, risk_free_rate, expires, ticker):
 	start_date = datetime.date.today()
 	num_simulations = 10000
+	option_prices = []
 	for x in range(0, 5):
 		# W(T) Wiener process/Brownian motion  = math.sqrt(T) * random.gauss(0, 1.0)
 		# sequential approach, calculate option price every day until expiry
-		option_prices = []
+		
 		times = []
 		# 1 .. expires inclusive
 		for i in range(1, expires + 1):
@@ -62,8 +98,15 @@ def runSimulaion(option_type, strike_price, current_value, volatility, risk_free
 			discount_factor = math.exp(-risk_free_rate * T)
 			option_prices.append(
 			discount_factor * (sum(sim_results) / float(num_simulations)))
-			print(ticker, " ", option_type, " ", "Option Price ",
-				option_prices[i - 1], " at ", start_date + datetime.timedelta(days=i))
+			if option_type == "Call":
+				call_results[(str(start_date + datetime.timedelta(days=i)))] = option_prices
+				#print(ticker, " ", option_type, " ", "Option Price ",
+				#option_prices[i - 1], " at ", start_date + datetime.timedelta(days=i))
+			else:
+				put_results[(str(start_date + datetime.timedelta(days=i)))] = option_prices
+				#print(ticker, " ", option_type, " ", "Option Price ",
+				#option_prices[i - 1], " at ", start_date + datetime.timedelta(days=i))
+
 	# Code to plot results to a graph
 	# plt.plot(times, option_prices)
 	# plt.xlabel('T')
@@ -100,8 +143,6 @@ def createYahooUrl(optionTicker):
 		expirationDates = data['optionChain']['result'][0]['expirationDates']
 		for item in expirationDates:
 			dt = datetime.datetime.fromtimestamp(item) - datetime.datetime.now()
-			print(dt)
-			print(dt.days)
 			if dt.days > 0:
 				expDate = item
 			break
@@ -115,6 +156,16 @@ def createYahooUrl(optionTicker):
 	except urllib.error.URLError as err:
 		print("Some other error happened:", err.reason)
 	return url + "?date=" + str(expDate)
+
+def writeResultHive():
+    option_prices_data = sparkSession.read.json('optionPrices.json')
+    option_prices_data.createOrReplaceTempView("option_prices_data")
+    option_prices_data.cache()
+    sparkSession.sql("DROP TABLE IF EXISTS option_prices_data_table")
+    sparkSession.table("option_prices_data").write.saveAsTable("option_prices_data_table")
+    #  USE TO TEST DB
+    # resultsHiveDF = sparkSession.sql("SELECT * FROM option_prices_data_table")
+    # resultsHiveDF.show(1)
 
 # Stops code being run on import
 if __name__ == "__main__":
