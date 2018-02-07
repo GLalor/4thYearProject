@@ -1,4 +1,4 @@
-import json, datetime, random, math, time
+import json, datetime, random, math, time, urllib
 from urllib.request import urlopen
 #from operator import add
 #import matplotlib.pyplot as plt  # mathplotlib
@@ -10,11 +10,8 @@ def main(ticker):
 	volatility = .3672 			# sigma i.e. volatility of underlying stock
 	risk_free_rate = 2.1024  # mu
 	expires = 55  # Number of days until maturity date
-	if "." in ticker:  # some tickers in list have "." when not needed
-		ticker = ticker.replace(".", "")  # Removing "."
-	url = "https://query2.finance.yahoo.com/v7/finance/options/"
-	url += ticker
 
+	url = createYahooUrl(ticker)
 	print(url)  # Prints URL to option chain
 
 	data = urlopen(url)
@@ -42,7 +39,6 @@ def main(ticker):
 
 
 def runSimulaion(option_type, strike_price, current_value, volatility, risk_free_rate, expires, ticker):
-	print("running sim  ",expires)
 	start_date = datetime.date.today()
 	num_simulations = 10000
 	for x in range(0, 5):
@@ -90,6 +86,33 @@ def sim_option_price(seed, current_value, risk_free_rate, volatility, T, strike_
 		return call_payoff(asset_price, strike_price)
 	else:
 		return put_payoff(asset_price, strike_price)
+
+def createYahooUrl(optionTicker):
+	try:
+		if "." in optionTicker:  # some tickers in list have "." when not needed
+			optionTicker = optionTicker.replace(".", "")  # Removing "."
+
+		url = "https://query2.finance.yahoo.com/v7/finance/options/"+ optionTicker
+		data = urlopen(url)
+		data = json.loads(data.read().decode())
+		expirationDates = data['optionChain']['result'][0]['expirationDates']
+		for item in expirationDates:
+			dt = datetime.datetime.fromtimestamp(item) - datetime.datetime.now()
+			print(dt)
+			print(dt.days)
+			if dt.days > 0:
+				expDate = item
+			break
+	except urllib.error.HTTPError as err:
+		if err.code == 404:
+			print("Page not found!")
+		elif err.code == 403:
+			print("Access denied!")
+		else:
+			print("Something happened! Error code", err.code)
+	except urllib.error.URLError as err:
+		print("Some other error happened:", err.reason)
+	return url + "?date=" + str(expDate)
 
 # Stops code being run on import
 if __name__ == "__main__":
