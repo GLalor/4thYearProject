@@ -8,18 +8,16 @@ College 4th/Final year project
    - Beatifulsoup library
    - Spark
    - Hadoop
-   - Findspark (python lib)
+   - Findspark (python lib)<br />
    (I am running Spark 2.2.1 and Hadoop 2.7.5)
    
 ## TO RUN MASTER branch
-To run full program use `python readList.py`
-Please see sample output below
+To run full program use `python readList.py`<br />
+Please see sample output below: <br />
 
 ![alt text](https://github.com/GLalor/Vanilla-Option-Pricer/blob/master/output.PNG "Sample output")
 
-### BUG
-  Problems can arrise if Yahoo hasnt removed a past date
-  
+
 ## TO RUN MULTIPROSS branch
 Run code on machine with **NVidia GPU installed**<br />
 To run full program use `python readList.py`<br />
