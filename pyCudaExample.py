@@ -4,6 +4,12 @@ from pycuda.compiler import SourceModule
 
 import numpy
 
+import os
+if os.system("cl.exe"):
+    os.environ['PATH'] += ';'+r"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin"
+if os.system("cl.exe"):
+    raise RuntimeError("cl.exe still not found, path probably incorrect")
+
 a = numpy.random.randn(4,4) # 4x4 array of random numbers
 a = a.astype(numpy.float32) # number format for card
 a_gpu = cuda.mem_alloc(a.nbytes) # allocation of memory for card and cpu to use

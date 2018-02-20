@@ -4,6 +4,12 @@ from pycuda.compiler import SourceModule
 from urllib.request import urlopen
 import numpy
 
+import os
+if os.system("cl.exe"):
+    os.environ['PATH'] += ';'+r"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin"
+if os.system("cl.exe"):
+    raise RuntimeError("cl.exe still not found, path probably incorrect")
+
 option_prices = {}
 
 def main(ticker):
@@ -41,7 +47,7 @@ def main(ticker):
     if "." in ticker:  # some tickers in list have "." when not needed
         ticker = ticker.replace(".", "")  # Removing "."
     url = "https://query2.finance.yahoo.com/v7/finance/options/"
-    url += ticker + "?date=1518134400"
+    url += ticker + "?date=1519344000"
 
     print(url)  # Prints URL to option chain
     try:        # try get opion data if not print reason
