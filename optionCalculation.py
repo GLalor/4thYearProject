@@ -16,54 +16,55 @@ put_results = {}
 
 
 def main(ticker):
-    option_type = "not set"
-    strike_price = 0        # S(T) price at maturity
-    current_value = 0           # S(0) spot price, price of stock now
-    volatility = .3672                  # sigma i.e. volatility of underlying stock
-    risk_free_rate = 2.1024  # mu
-    expires = 55  # Number of days until maturity date
+	option_type = "not set"
+	strike_price = 0        # S(T) price at maturity
+	current_value = 0           # S(0) spot price, price of stock now
+	volatility = .3672                  # sigma i.e. volatility of underlying stock
+	risk_free_rate = 2.1024  # mu
+	expires = 55  # Number of days until maturity date
 
-    data = retrieveYahooData.main(ticker)
-    option_prices['Ticker'] = ticker
-    # Cutting down on loops
-    for item in data['optionChain']['result']:
-        # Test if is regularMarketPrice present will move to check if date is present in experationDates when working with dates
-        if "regularMarketPrice" in item['quote']:
-            current_value = item['quote']['regularMarketPrice']
-            data = item['options']
-            for option in data:
-                calls, puts = option['calls'], option['puts']
-            # Assigning variables for calc and running sim
-            for call in calls:
-                option_type = "Call"
-                strike_price = call['strike']           # S(T) price at maturity
-                volatility = call['impliedVolatility']
-                dt = datetime.datetime.fromtimestamp(
-                    call['expiration']) - datetime.datetime.now()
-                expires = dt.days
-                option_prices['ExpirationDate'] = datetime.datetime.fromtimestamp(
-                    call['expiration']).strftime('%Y-%m-%d')
-                runSimulaion(option_type, strike_price, current_value,
-                             volatility, risk_free_rate, expires, ticker)
-                results[option_type] = call_results
-            for put in puts:
-                option_type = "Put"
-                strike_price = put['strike']            # S(T) price at maturity
-                volatility = put['impliedVolatility']
-                runSimulaion(option_type, strike_price, current_value,
-                             volatility, risk_free_rate, expires, ticker)
-                results[option_type] = put_results
-            option_prices['Prices'] = results
-        else:
-            call_results['NA'] = "MISSING DATA"
-            put_results['NA'] = "MISSING DATA"
-            results[option_type] = call_results
-            results[option_type] = put_results
-            option_prices['Prices'] = results
+	data = retrieveYahooData.main(ticker)
+	option_prices['Ticker'] = ticker
+	# Cutting down on loops
 
-    with open('optionPrices.json', 'w') as outfile:
-        json.dump(option_prices, outfile)
-    writeToHDFS.writeResultHive()
+	#data['optionChain']['result'][0]['expirationDates']
+	# Test if is regularMarketPrice present will move to check if date is present in experationDates when working with dates
+	if "regularMarketPrice" in data['optionChain']['result'][0]['quote']:
+		current_value = data['optionChain']['result'][0]['quote']['regularMarketPrice']
+		data = data['optionChain']['result'][0]['options']
+		for option in data:
+			calls, puts = option['calls'], option['puts']
+		# Assigning variables for calc and running sim
+		for call in calls:
+			option_type = "Call"
+			strike_price = call['strike']           # S(T) price at maturity
+			volatility = call['impliedVolatility']
+			dt = datetime.datetime.fromtimestamp(
+			call['expiration']) - datetime.datetime.now()
+			expires = dt.days
+			option_prices['ExpirationDate'] = datetime.datetime.fromtimestamp(
+			call['expiration']).strftime('%Y-%m-%d')
+			runSimulaion(option_type, strike_price, current_value,
+							volatility, risk_free_rate, expires, ticker)
+			results[option_type] = call_results
+		for put in puts:
+			option_type = "Put"
+			strike_price = put['strike']            # S(T) price at maturity
+			volatility = put['impliedVolatility']
+			runSimulaion(option_type, strike_price, current_value,
+							volatility, risk_free_rate, expires, ticker)
+			results[option_type] = put_results
+			option_prices['Prices'] = results
+	else:
+		call_results['NA'] = "MISSING DATA"
+		put_results['NA'] = "MISSING DATA"
+		results[option_type] = call_results
+		results[option_type] = put_results
+		option_prices['Prices'] = results
+
+	with open('optionPrices.json', 'w') as outfile:
+		json.dump(option_prices, outfile)
+	writeToHDFS.writeResultHive()
 
 
 def runSimulaion(option_type, strike_price, current_value, volatility, risk_free_rate, expires, ticker):
