@@ -28,6 +28,7 @@ def main(ticker):
 		print(url)  # Prints URL to option chain
 		data = urlopen(url)
 		data = json.loads(data.read().decode())
+		option_prices['Ticker'] = ticker
 		# Cutting down on loops
 		for item in data['optionChain']['result']:
 			if "regularMarketPrice" in item['quote']: # Test if is regularMarketPrice present will move to check if date is present in experationDates when working with dates 
@@ -42,6 +43,7 @@ def main(ticker):
 					volatility = call['impliedVolatility']
 					dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
 					expires = dt.days
+					option_prices['ExpirationDate'] = datetime.datetime.fromtimestamp(call['expiration']).strftime('%Y-%m-%d')
 					runSimulaion(option_type, strike_price, current_value,
 								volatility, risk_free_rate, expires, ticker)
 					results[option_type] = call_results
@@ -52,13 +54,13 @@ def main(ticker):
 					runSimulaion(option_type, strike_price, current_value,
 									volatility, risk_free_rate, expires, ticker)
 					results[option_type] = put_results
-				option_prices[ticker] = results
+				option_prices['Prices'] = results
 			else:
 				call_results['NA'] = "MISSING DATA"
 				put_results['NA'] = "MISSING DATA"
 				results[option_type] = call_results
 				results[option_type] = put_results
-				option_prices[ticker] = results
+				option_prices['Prices'] = results
 		with open('optionPrices.json', 'w') as outfile:
 			json.dump(option_prices,outfile)
 		
