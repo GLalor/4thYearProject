@@ -12,7 +12,7 @@ College 4th/Final year project
    (I am running Spark 2.2.1 and Hadoop 2.7.5)
    
 ## TO RUN MASTER branch
-To run full program use `python readList.py`<br />
+To run full program use `python startCalculation.py`<br />
 Please see sample output below: <br />
 
 ![alt text](https://github.com/GLalor/Vanilla-Option-Pricer/blob/master/output.PNG "Sample output")
