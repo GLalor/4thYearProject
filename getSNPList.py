@@ -1,11 +1,12 @@
 import json
 import urllib
+import time
+from bs4 import BeautifulSoup
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 
 def main():
-    printDescription()  # Only if running on home device! Comment if on cloud
     url = 'https://dimon.ca/api/snp500'  # Set destination URL here
     sessionID = getSessionID()
     print("SessiosessionID = ", sessionID)  # Comment if on cloud
@@ -14,28 +15,16 @@ def main():
     request = Request(url, urlencode(post_fields).encode())
     data = urlopen(request).read().decode()
     data = json.loads(data)
-    i = 0
-    for item in data['members']:
-        i = i + 1
-        print(item['sym'], " ", i)
+    return data
 
 
-def printDescription():
-    print("Program to print ticker symbols of stocks in S and P 500 list")
-
-
-def getSessionID():             # Scrapping page for sessionID to access api/snp500
-    id = ""
-    urllib.request.urlcleanup()  # clean cache from page
+def getSessionID():
+    urllib.request.urlcleanup()  # removes any cache, cookies etc
     link = 'https://dimon.ca/snp500/'  # Set destination URL here
+    id = ""
     data = urllib.request.urlopen(link)
-    data = json.dumps(data.read().decode())
-    data = json.loads(data)
-    for i in range(0, len(data)):
-        if data[(23108 + i)] == '"':
-            break
-        id += data[(23108 + i)]
-
+    data = BeautifulSoup(data, "html.parser")
+    id = data.find('input', attrs={'name': 'session'}).get('value')
     return id
 
 
