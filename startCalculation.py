@@ -3,7 +3,7 @@ import optionCalculation
 import time
 import getSNPList
 import riskRateRetrieval
-
+import optionCalculationGPU
 
 def main():
     start_time = time.time()
@@ -13,7 +13,8 @@ def main():
     for item in data['members']:
             # for testing purposes if item['sym'] == "AAPL":
         print(item['sym'])
-        optionCalculation.main(item['sym'] ,rates)
+        #optionCalculation.main(item['sym'] ,rates)
+        optionCalculationGPU.main(item['sym'])
     print("******** finsihed in %s seconds ********" %
           (time.time() - start_time))
 
