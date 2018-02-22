@@ -85,6 +85,7 @@ def main(ticker, riskFreeRates):
                             call_results[(str(start_date + datetime.timedelta(days=j)))] = (float(x))
                     riskResults[option_type] = call_results
                     priceResults.append(riskResults)
+            option_prices['prices'] = priceResults
 
             for put in puts:
                 option_type = "Put"
