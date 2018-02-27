@@ -15,12 +15,16 @@ def main(ticker):
     except urllib.error.HTTPError as err:
         if err.code == 404:
             print("Page not found!")
+            return False
         elif err.code == 403:
             print("Access denied!")
+            return False
         else:
             print("Something happened! Error code", err.code)
+            return False
     except urllib.error.URLError as err:
         print("Some other error happened:", err.reason)
+        return False
 
 
 def createYahooUrlWithDate(optionTicker):

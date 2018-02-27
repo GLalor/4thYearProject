@@ -45,9 +45,10 @@ def main(ticker, riskFreeRates):
     func = mod.get_function("doublify") #calling compiling function
     # calc_start_time = time.time()
     data = retrieveYahooData.main(ticker)
-    option_prices['Ticker'] = ticker
-    option_prices['Risk Free Rates'] = risk_free_rate
-    if data is not None:
+    if data is not None and data is not False:
+        option_prices['Ticker'] = ticker
+        option_prices['Risk Free Rates'] = risk_free_rate
+    
         if "regularMarketPrice" in data['optionChain']['result'][0]['quote']:
             current_value = data['optionChain']['result'][0]['quote']['regularMarketPrice']
             data = data['optionChain']['result'][0]['options']
@@ -56,10 +57,13 @@ def main(ticker, riskFreeRates):
                 
             for call in calls:
                 option_type = "Call"
-                strike_price = call['strike']	        # S(T) price at maturity
+                strike_price = call['strike'] # S(T) price at maturity
+                riskResults['Strike Price'] = strike_price     
                 volatility = call['impliedVolatility']
+                riskResults['Volatility'] = volatility
                 dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
                 expires = dt.days
+                option_prices['Number of Days'] = expires
                 option_prices['ExpirationDate'] = datetime.datetime.fromtimestamp(
                 call['expiration']).strftime('%Y-%m-%d')
                 for rate in risk_free_rate:
@@ -84,15 +88,18 @@ def main(ticker, riskFreeRates):
                         for x in sim_prices:
                             call_results[(str(start_date + datetime.timedelta(days=j)))] = (float(x))
                     riskResults[option_type] = call_results
-                    priceResults.append(riskResults)
-            option_prices['prices'] = priceResults
-
+                    priceResults.append(riskResults.copy())
+            # option_prices['prices'] = priceResults
+            riskResults = {} # reset riskResults dicionary 
             for put in puts:
                 option_type = "Put"
                 strike_price = put['strike']	        # S(T) price at maturity
+                riskResults['Strike Price'] = strike_price 
                 volatility = put['impliedVolatility']
+                riskResults['Volatility'] = volatility
                 dt = datetime.datetime.fromtimestamp(put['expiration']) - datetime.datetime.now()
                 expires = dt.days
+                option_prices['Number of Days'] = expires
                 for rate in risk_free_rate:
                     riskResults['RiskFreeRate'] = rate
                     for j in range(1, expires + 1): # Monte carlo Sim 10'000
@@ -122,9 +129,9 @@ def main(ticker, riskFreeRates):
     else:
         call_results['NA'] = "MISSING DATA"
         put_results['NA'] = "MISSING DATA"
-        results[option_type] = call_results
-        results[option_type] = put_results
-
+        riskResults[option_type] = call_results
+        riskResults[option_type] = put_results
+        option_prices['Prices'] = priceResults
     
     with open('optionPrices.json', 'w') as outfile:
             json.dump(option_prices,outfile)
