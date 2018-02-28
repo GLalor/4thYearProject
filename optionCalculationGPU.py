@@ -4,11 +4,6 @@ from pycuda.compiler import SourceModule
 from urllib.request import urlopen
 import numpy
 
-import os
-if os.system("cl.exe"):
-    os.environ['PATH'] += ';'+r"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin"
-if os.system("cl.exe"):
-    raise RuntimeError("cl.exe still not found, path probably incorrect")
 
 option_prices = {}
 
@@ -136,4 +131,4 @@ def main(ticker, riskFreeRates):
     with open('optionPrices.json', 'w') as outfile:
             json.dump(option_prices,outfile)
     writeToHDFS.writeResultHive()
-    print("******** GPU finsihed in %s seconds ********" % (time.time() -start_time))
+    print("******** GPU finished in %s seconds ********" % (time.time() -start_time))

@@ -34,7 +34,7 @@ def createYahooUrlWithDate(optionTicker):
     expirationDates = data['optionChain']['result'][0]['expirationDates']
     for item in expirationDates:
         dt = datetime.datetime.fromtimestamp(item) - datetime.datetime.now()
-        if dt.days > 0:  # should run he day before bu is seen as 0 days and number of hours
+        if dt.days > 1:  # should run he day before bu is seen as 0 days and number of hours
             expDate = item
             break
     return url + "?date=" + str(expDate)
