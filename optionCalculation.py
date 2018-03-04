@@ -17,6 +17,7 @@ put_results = {}
 
 
 def main(ticker, riskFreeRates):
+    print("in cpu")
     option_type = "not set"
     strike_price = 0        # S(T) price at maturity
     current_value = 0           # S(0) spot price, price of stock now
