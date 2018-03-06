@@ -2,17 +2,19 @@ import json
 import optionCalculation
 import time
 import getSNPList
+import riskRateRetrieval
 import optionCalculationGPU
 
 def main():
     start_time = time.time()
     printDescription()
     data = getSNPList.main()
+    rates = riskRateRetrieval.main()
     for item in data['members']:
             # for testing purposes if item['sym'] == "AAPL":
         print(item['sym'])
-        #optionCalculation.main(item['sym'])
-        optionCalculationGPU.main(item['sym'])
+        #optionCalculation.main(item['sym'], rates)
+        optionCalculationGPU.main(item['sym'], rates)
     print("******** finsihed in %s seconds ********" %
           (time.time() - start_time))
 

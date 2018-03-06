@@ -15,12 +15,16 @@ def main(ticker):
     except urllib.error.HTTPError as err:
         if err.code == 404:
             print("Page not found!")
+            return False
         elif err.code == 403:
             print("Access denied!")
+            return False
         else:
             print("Something happened! Error code", err.code)
+            return False
     except urllib.error.URLError as err:
         print("Some other error happened:", err.reason)
+        return False
 
 
 def createYahooUrlWithDate(optionTicker):
@@ -30,7 +34,7 @@ def createYahooUrlWithDate(optionTicker):
     expirationDates = data['optionChain']['result'][0]['expirationDates']
     for item in expirationDates:
         dt = datetime.datetime.fromtimestamp(item) - datetime.datetime.now()
-        if dt.days > 0:  # should run he day before bu is seen as 0 days and number of hours
+        if dt.days > 1:  # should run he day before bu is seen as 0 days and number of hours
             expDate = item
             break
     return url + "?date=" + str(expDate)
