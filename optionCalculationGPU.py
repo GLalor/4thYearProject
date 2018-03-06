@@ -63,13 +63,13 @@ def main(ticker, riskFreeRates):
                 volatility = call['impliedVolatility']
                 riskResults['Volatility'] = volatility
                 dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
-                expires = dt.days
+                expires = dt.days + 1 # doesnt run on the exp date so plus 1 to account for that
                 option_prices['Number of Days'] = expires
                 option_prices['ExpirationDate'] = datetime.datetime.fromtimestamp(
                 call['expiration']).strftime('%Y-%m-%d')
                 for rate in risk_free_rate:
                     riskResults['RiskFreeRate'] = rate
-                    for j in range(1, expires + 1): # Monte carlo Sim 10'000
+                    for j in range(0, expires + 1): # Monte carlo Sim 10'000
                         sim_results = []
                         sim_prices = []
                         
@@ -99,11 +99,12 @@ def main(ticker, riskFreeRates):
                 volatility = put['impliedVolatility']
                 riskResults['Volatility'] = volatility
                 dt = datetime.datetime.fromtimestamp(put['expiration']) - datetime.datetime.now()
-                expires = dt.days
+                expires = dt.days + 1 # doesnt run on the exp date so plus 1 to account for that
+                
                 option_prices['Number of Days'] = expires
                 for rate in risk_free_rate:
                     riskResults['RiskFreeRate'] = rate
-                    for j in range(1, expires + 1): # Monte carlo Sim 10'000
+                    for j in range(0, expires + 1): # Monte carlo Sim 10'000
                         sim_results = []
                         sim_prices = []
                         
@@ -133,6 +134,7 @@ def main(ticker, riskFreeRates):
         riskResults[option_type] = call_results
         riskResults[option_type] = put_results
         option_prices['Prices'] = priceResults
+
     print("******** GPU finished in %s seconds ********" % (time.time() -start_time))
     with open('optionPrices.json', 'w') as outfile:
             json.dump(option_prices,outfile)
