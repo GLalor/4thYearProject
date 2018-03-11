@@ -48,7 +48,7 @@ def main(ticker, riskFreeRates):
     data = retrieveYahooData.main(ticker)
     if data is not None and data is not False:
         option_prices['Ticker'] = ticker
-        option_prices['Risk Free Rates'] = risk_free_rate
+        option_prices['RiskFreeRates'] = risk_free_rate
     
         if "regularMarketPrice" in data['optionChain']['result'][0]['quote']:
             current_value = data['optionChain']['result'][0]['quote']['regularMarketPrice']
@@ -59,12 +59,12 @@ def main(ticker, riskFreeRates):
             for call in calls:
                 option_type = "Call"
                 strike_price = call['strike'] # S(T) price at maturity
-                riskResults['Strike Price'] = strike_price     
+                riskResults['StrikePrice'] = strike_price     
                 volatility = call['impliedVolatility']
                 riskResults['Volatility'] = volatility
                 dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
                 expires = dt.days + 1 # doesnt run on the exp date so plus 1 to account for that
-                option_prices['Number of Days'] = expires
+                option_prices['NumberOfDays'] = expires
                 option_prices['ExpirationDate'] = datetime.datetime.fromtimestamp(
                 call['expiration']).strftime('%Y-%m-%d')
                 for rate in risk_free_rate:
@@ -101,7 +101,7 @@ def main(ticker, riskFreeRates):
                 dt = datetime.datetime.fromtimestamp(put['expiration']) - datetime.datetime.now()
                 expires = dt.days + 1 # doesnt run on the exp date so plus 1 to account for that
                 
-                option_prices['Number of Days'] = expires
+                option_prices['NumberOfDays'] = expires
                 for rate in risk_free_rate:
                     riskResults['RiskFreeRate'] = rate
                     for j in range(0, expires + 1): # Monte carlo Sim 10'000
