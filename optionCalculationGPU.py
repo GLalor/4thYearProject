@@ -88,14 +88,14 @@ def main(ticker, riskFreeRates):
                         sim_prices.append(discount_factor * (sim_results_total / float(num_simulations)))
                         for x in sim_prices:
                             call_results[(str(start_date + datetime.timedelta(days=j)))] = (float(x))
-                    riskResults[option_type] = call_results
+                    riskResults[option_type] = call_results.copy()
                     priceResults.append(riskResults.copy())
             # option_prices['prices'] = priceResults
             riskResults = {} # reset riskResults dicionary 
             for put in puts:
                 option_type = "Put"
                 strike_price = put['strike']	        # S(T) price at maturity
-                riskResults['Strike Price'] = strike_price 
+                riskResults['StrikePrice'] = strike_price 
                 volatility = put['impliedVolatility']
                 riskResults['Volatility'] = volatility
                 dt = datetime.datetime.fromtimestamp(put['expiration']) - datetime.datetime.now()
@@ -123,8 +123,8 @@ def main(ticker, riskFreeRates):
                         sim_prices.append(discount_factor * (sim_results_total / float(num_simulations)))
                         for x in sim_prices:
                             put_results[(str(start_date + datetime.timedelta(days=j)))] = (float(x))
-                    riskResults[option_type] = put_results
-                    priceResults.append(riskResults)
+                    riskResults[option_type] = put_results.copy()
+                    priceResults.append(riskResults.copy())
 
             option_prices['Prices'] = priceResults
 
