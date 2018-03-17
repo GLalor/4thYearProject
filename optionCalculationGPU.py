@@ -14,7 +14,7 @@ if os.system("cl.exe"):
 option_prices = {}
 
 def main(ticker, riskFreeRates):
-    #ticker = "BCR"
+    ticker = "AMZN"
     start_time = time.time()
     num_simulations = 10000      
     option_type = "not set"    
@@ -40,7 +40,7 @@ def main(ticker, riskFreeRates):
     __global__ void doublify(float *a, float strike, float current_value, float volatility, float risk_free_rate, float T, float randNum)
     {
         int idx = threadIdx.x;
-        a[idx] = exp(current_value * (risk_free_rate - .5 * pow(volatility,2)) * T + volatility * sqrt(T) * randNum);
+        a[idx] = current_value * exp((risk_free_rate - .5 * pow(volatility,2)) * T + volatility * sqrt(T) * randNum);
     }
     """)
     func = mod.get_function("doublify") #calling compiling function
@@ -72,16 +72,15 @@ def main(ticker, riskFreeRates):
                     for j in range(1, expires + 1): # Monte carlo Sim 10'000
                         sim_results = []
                         sim_prices = []
-                        
                         sim_results_total = 0
                         T = j/365
-                    
                         discount_factor = math.exp(-rate * T)
+                        random.seed((time.time() + j)) #generate random seed
                         for x in range(0, 10):
                             func(a_gpu, numpy.float32(strike_price), numpy.float32(current_value), numpy.float32(volatility), numpy.float32(rate), numpy.float32(T), numpy.float32(random.gauss(0, 1.0)), block=(1000,1,1)) # passing arguments
                             a_doubled = numpy.empty_like(a) 
                             cuda.memcpy_dtoh(a_doubled, a_gpu) # retriving results
-                            sim_results.append(a_doubled)
+                            sim_results.append(a_doubled.copy())
                             for x in range(1000):
                                 sim_results[0][x] = max(0.0, sim_results[0][x] - strike_price)
                                 sim_results_total += sim_results[0][x]
@@ -90,6 +89,9 @@ def main(ticker, riskFreeRates):
                             call_results[(str(start_date + datetime.timedelta(days=j)))] = (float(x))
                     riskResults[option_type] = call_results
                     priceResults.append(riskResults.copy())
+
+
+
             # option_prices['prices'] = priceResults
             riskResults = {} # reset riskResults dicionary 
             for put in puts:
@@ -106,11 +108,10 @@ def main(ticker, riskFreeRates):
                     for j in range(1, expires + 1): # Monte carlo Sim 10'000
                         sim_results = []
                         sim_prices = []
-                        
                         sim_results_total = 0
                         T = j/365
-                        
                         discount_factor = math.exp(-rate * T)
+                        random.seed((time.time() + j)) #generate random seed
                         for x in range(0, 10):
                             func(a_gpu, numpy.float32(strike_price), numpy.float32(current_value), numpy.float32(volatility), numpy.float32(rate), numpy.float32(T), numpy.float32(random.gauss(0, 1.0)), block=(1000,1,1)) # passing arguments
                             a_doubled = numpy.empty_like(a) 
@@ -137,5 +138,5 @@ def main(ticker, riskFreeRates):
     with open('optionPrices.json', 'w') as outfile:
             json.dump(option_prices,outfile)
             
-    writeToHDFS.writeResultHive()
+    #writeToHDFS.writeResultHive()
     print("******** Total Time %s seconds ********" % (time.time() -start_time))
