@@ -4,24 +4,16 @@ from pycuda.compiler import SourceModule
 from urllib.request import urlopen
 import numpy
 
-import os
-if os.system("cl.exe"):
-    os.environ['PATH'] += ';'+r"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin"
-if os.system("cl.exe"):
-    raise RuntimeError("cl.exe still not found, path probably incorrect")
-
-
 option_prices = {}
 
 def main(ticker, riskFreeRates):
-    ticker = "AMZN"
     start_time = time.time()
-    num_simulations = 10000      
+    NUM_SIMULATTIONS = 10000      
     option_type = "not set"    
-    strike_price = 120.0        # S(T) price at maturity
-    current_value = 49.8		# S(0) spot price, price of stock now
-    volatility = 1.6015644921874999 			# sigma i.e. volatility of underlying stock
-    expires = 55  # Number of days until maturity date
+    strike_price = 0
+    current_value = 0
+    volatility = 0
+    expires = 0  # Number of days until maturity date
     risk_free_rate = riskFreeRates # risk free rate from fed
     start_date = datetime.date.today()
     riskResults = {}
@@ -38,7 +30,7 @@ def main(ticker, riskFreeRates):
         {
             int idx = threadIdx.x + threadIdx.y;
             float i = a[idx];
-            a[idx] = current_value * exp((risk_free_rate - .5 * pow(volatility,2)) * T + volatility * sqrt(T) * (i));
+            a[idx] = current_value * exp((risk_free_rate - .5 * (volatility*volatility)) * T + volatility * sqrt(T) * (i));
         }
     """)
 
@@ -88,11 +80,11 @@ def main(ticker, riskFreeRates):
                             func(a_gpu, numpy.float32(strike_price), numpy.float32(current_value), numpy.float32(volatility), numpy.float32(rate), numpy.float32(T), block=(1000,1,1)) # passing arguments
                             a_doubled = numpy.empty_like(a) 
                             cuda.memcpy_dtoh(a_doubled, a_gpu) # retriving results
-                            sim_results.append(a_doubled)
+                            sim_results.extend(a_doubled)
                             for x in range(1000):
-                                sim_results[0][x] = max(0.0, sim_results[0][x] - strike_price)
-                                sim_results_total += sim_results[0][x]
-                        sim_prices.append(discount_factor * (sim_results_total / float(num_simulations)))
+                                sim_results[x] = max(0.0, sim_results[x] - strike_price)
+                                sim_results_total += sim_results[x]
+                        sim_prices.append(discount_factor * (sim_results_total / float(NUM_SIMULATTIONS)))
                         for x in sim_prices:
                             call_results[(str(start_date + datetime.timedelta(days=j)))] = (x)
                     riskResults[option_type] = call_results.copy()
@@ -131,7 +123,7 @@ def main(ticker, riskFreeRates):
                             for x in range(1000):
                                 sim_results[0][x] = max(0.0, strike_price - sim_results[0][x])
                                 sim_results_total += sim_results[0][x]
-                        sim_prices.append(discount_factor * (sim_results_total / float(num_simulations)))
+                        sim_prices.append(discount_factor * (sim_results_total / float(NUM_SIMULATTIONS)))
                         for x in sim_prices:
                             put_results[(str(start_date + datetime.timedelta(days=j)))] = (float(x))
                     riskResults[option_type] = put_results.copy()
@@ -150,5 +142,5 @@ def main(ticker, riskFreeRates):
     with open('optionPrices.json', 'w') as outfile:
             json.dump(option_prices,outfile)
             
-    #writeToHDFS.writeResultHive()
+    writeToHDFS.writeResultHive()
     print("******** Total Time %s seconds ********" % (time.time() -start_time))
