@@ -8,9 +8,9 @@ def main():
     riskFreeRate = [mydata["3 MO"]]
     for i in range(1,4):
         if i % 2 == 0:
-            riskFreeRate.append(riskFreeRate[i-1] + (riskFreeRate[i-1] * 0.125))
+            riskFreeRate.append(riskFreeRate[i-1] + (riskFreeRate[i-1] * (0.125 * i)))
         else:
-            riskFreeRate.append(riskFreeRate[i-1] - (riskFreeRate[i-1] * 0.125))
+            riskFreeRate.append(riskFreeRate[i-1] - (riskFreeRate[i-1] * (0.125 * i)))
     for rate in riskFreeRate:
         rates.append(float(rate[0]))
     return rates
