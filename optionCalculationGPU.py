@@ -142,5 +142,5 @@ def main(ticker, riskFreeRates):
     with open('optionPrices.json', 'w') as outfile:
             json.dump(option_prices,outfile)
             
-    writeToHDFS.writeResultHive()
+    #writeToHDFS.writeResultHive()
     print("******** Total Time %s seconds ********" % (time.time() -start_time))
