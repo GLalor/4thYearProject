@@ -66,7 +66,7 @@ def main(ticker):
                     volatility = call['impliedVolatility']
                     dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
                     expires = dt.days
-                    for j in range(1, expires + 1): # Monte carlo Sim 10'000
+                    for j in range(0, expires + 1): # Monte carlo Sim 10'000
                         sim_results = []
                         sim_prices = []
                         
@@ -92,7 +92,7 @@ def main(ticker):
                     volatility = put['impliedVolatility']
                     dt = datetime.datetime.fromtimestamp(put['expiration']) - datetime.datetime.now()
                     expires = dt.days
-                    for j in range(1, expires + 1): # Monte carlo Sim 10'000
+                    for j in range(0, expires + 1): # Monte carlo Sim 10'000
                         sim_results = []
                         sim_prices = []
                         
