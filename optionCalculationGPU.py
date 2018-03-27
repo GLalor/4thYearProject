@@ -47,12 +47,7 @@ def main(ticker, riskFreeRates):
             data = data['optionChain']['result'][0]['options']
             for option in data:
                 calls, puts = option['calls'], option['puts']
-            for call in calls:
-                # reset GPU data each time
-                a = numpy.random.uniform(0,1,1000)  # (set size to match experation)
-                a = a.astype(numpy.float32) # number format for card
-                a_gpu = cuda.mem_alloc(a.nbytes) # allocation of memory for card and cpu to use
-                cuda.memcpy_htod(a_gpu, a) # transfering the data to memeory location 
+            for call in calls: 
                 option_type = "Call"
                 strike_price = call['strike'] # S(T) price at maturity
                 riskResults['StrikePrice'] = strike_price     
