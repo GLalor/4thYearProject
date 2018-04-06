@@ -46,8 +46,8 @@ def main(ticker, riskFreeRates):
                 dt = datetime.datetime.fromtimestamp(
                 call['expiration']) - datetime.datetime.now()
                 expires = dt.days+ 1 # doesnt run on the exp date so plus 1 to account for that
-                results['NumberOfDays'] = expires
-                results['ExpirationDate'] = datetime.datetime.fromtimestamp(
+                option_prices['NumberOfDays'] = expires
+                option_prices['ExpirationDate'] = datetime.datetime.fromtimestamp(
                 call['expiration']).strftime('%Y-%m-%d')
                 for rate in risk_free_rate:
                     results['RiskFreeRate'] = rate
@@ -65,9 +65,7 @@ def main(ticker, riskFreeRates):
                 dt = datetime.datetime.fromtimestamp(
                 put['expiration']) - datetime.datetime.now()
                 expires = dt.days + 1 # doesnt run on the exp date so plus 1 to account for that
-                results['NumberOfDays'] = expires
-                results['ExpirationDate'] = datetime.datetime.fromtimestamp(
-                put['expiration']).strftime('%Y-%m-%d')
+                option_prices['NumberOfDays'] = expires
                 for rate in risk_free_rate:
                     results['RiskFreeRate'] = rate
                     runSimulaion(option_type, strike_price, current_value,
