@@ -11,7 +11,6 @@ def getSessionID():
 	data = urllib.request.urlopen(link)
 	data = BeautifulSoup(data, "html.parser")
 	id = data.find('input', attrs={'name':'session'}).get('value')
-		
 	return id
 
 def printDescription():

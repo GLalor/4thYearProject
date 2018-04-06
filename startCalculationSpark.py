@@ -28,9 +28,6 @@ def main():
 	for item in data['members']:
 		symbols.append(item['sym'])
 
-	with open('SnPList.json', 'w') as outfile:
-			json.dump(data,outfile)
-
 	symbols = sc.parallelize(symbols)
 	#print(symbols.collect())
 	result = symbols.map(lambda sym: optionCalculationSpark.main(sym,rates))

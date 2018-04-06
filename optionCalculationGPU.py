@@ -55,8 +55,8 @@ def main(ticker, riskFreeRates):
                 riskResults['Volatility'] = volatility
                 dt = datetime.datetime.fromtimestamp(call['expiration']) - datetime.datetime.now()
                 expires = dt.days + 1 # doesnt run on the exp date so plus 1 to account for that
-                option_prices['NumberOfDays'] = expires
-                option_prices['ExpirationDate'] = datetime.datetime.fromtimestamp(
+                riskResults['NumberOfDays'] = expires
+                riskResults['ExpirationDate'] = datetime.datetime.fromtimestamp(
                 call['expiration']).strftime('%Y-%m-%d')
                 for rate in risk_free_rate:
                     riskResults['RiskFreeRate'] = rate
@@ -94,8 +94,9 @@ def main(ticker, riskFreeRates):
                 riskResults['Volatility'] = volatility
                 dt = datetime.datetime.fromtimestamp(put['expiration']) - datetime.datetime.now()
                 expires = dt.days + 1 # doesnt run on the exp date so plus 1 to account for that
-                
-                option_prices['NumberOfDays'] = expires
+                riskResults['NumberOfDays'] = expires
+                riskResults['ExpirationDate'] = datetime.datetime.fromtimestamp(
+                put['expiration']).strftime('%Y-%m-%d')
                 for rate in risk_free_rate:
                     riskResults['RiskFreeRate'] = rate
                     for j in range(0, expires + 1): 
@@ -137,5 +138,5 @@ def main(ticker, riskFreeRates):
     with open('optionPrices.json', 'w') as outfile:
             json.dump(option_prices,outfile)
             
-    #writeToHDFS.writeResultHive()
+    writeToHDFS.writeResultHive()
     print("******** Total Time %s seconds ********" % (time.time() -start_time))

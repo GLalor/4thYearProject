@@ -4,6 +4,7 @@ import time
 import getSNPList
 import riskRateRetrieval
 import optionCalculationGPU
+import writeToHDFS
 
 def main():
     start_time = time.time()
@@ -15,6 +16,7 @@ def main():
         print(item['sym'])
         #optionCalculation.main(item['sym'], rates)
         optionCalculationGPU.main(item['sym'], rates)
+    writeToHDFS.writeResultHive()
     print("******** finsihed in %s seconds ********" %
           (time.time() - start_time))
 

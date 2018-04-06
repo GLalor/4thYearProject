@@ -57,6 +57,5 @@ class unitTestReadlist(unittest.TestCase):
         self.assertRaises(urllib.error.HTTPError,
                           retrieveYahooData.createYahooUrlWithDate, "x12")
 
-
 if __name__ == '__main__':
     unittest.main()
