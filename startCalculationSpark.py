@@ -1,6 +1,7 @@
 import json, urllib, optionCalculationSpark, time, findspark
 import getSNPList
 import riskRateRetrieval
+import pandas
 from bs4 import BeautifulSoup 
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -10,15 +11,8 @@ from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 # Starting and configuring spark session
 conf = SparkConf().setMaster("local[4]").setAppName('OptionPricer')
-# spark = SparkSession \
-#     .builder \
-#     .appName("Spark opion pricer") \
-#     .config(conf=conf) \
-#     .getOrCreate()
-
 sc = SparkContext(conf=conf)
 
-#sc.addPyFile("/Users/graha/Documents/4th%20year/Project/Vanilla-Option-Pricer/optionChainRetrieval.py")
 def main():
 	symbols = []
 	start_time = time.time()
@@ -28,10 +22,14 @@ def main():
 	for item in data['members']:
 		symbols.append(item['sym'])
 
+	symbols = ['MMM']
 	symbols = sc.parallelize(symbols)
-	#print(symbols.collect())
 	result = symbols.map(lambda sym: optionCalculationSpark.main(sym,rates))
-	print(result.collect())
+	result.collect()
+
+	spark = SparkSession(sc)
+	option_prices_data = spark.read.json('optionPrices.json')
+	option_prices_data.write.save('E:\ProjectDB6', format='json', mode='append')
 	print("******** finsihed in %s seconds ********" % (time.time() -start_time))
 
 

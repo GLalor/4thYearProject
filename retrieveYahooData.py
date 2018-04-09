@@ -18,9 +18,6 @@ def main(ticker):
         if err.code == 404:
             print("Page not found!")
             return False
-        elif err.code == 403:
-            print("Access denied!")
-            return False
         else:
             print("Something happened! Error code", err.code)
             return False

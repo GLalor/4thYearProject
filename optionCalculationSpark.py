@@ -80,10 +80,10 @@ def main(ticker, riskFreeRates):
         results[option_type] = put_results
         option_prices['Prices'] = results
 
-    with open('optionPrices.json', 'w') as outfile:
+    with open('optionPrices.json', 'a+') as outfile:
         json.dump(option_prices, outfile)
-    writeResultHive()
 
+    return option_prices
 
 def runSimulaion(option_type, strike_price, current_value, volatility, rate, expires, ticker):
     start_date = datetime.date.today()
@@ -138,14 +138,6 @@ def sim_option_price(seed, current_value, risk_free_rate, volatility, T, strike_
         return call_payoff(asset_price, strike_price)
     else:
         return put_payoff(asset_price, strike_price)
-
-# change 'E:\ProjectDB' to a suitable drive on computer
-def writeResultHive():
-    option_prices_data = sparkSession.read.json('optionPrices.json')
-    option_prices_data.write.save('E:\ProjectDB', format='json', mode='append')
-    #  USE TO TEST DB
-    resultsHiveDF = sparkSession.read.format('json').load('E:\ProjectDB')
-    resultsHiveDF.show(1)
 
 # Stops code being run on import
 if __name__ == "__main__":
