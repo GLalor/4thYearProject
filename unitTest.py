@@ -10,14 +10,15 @@ from urllib.request import urlopen
 # Retrieve code coverage
 # pip install coverage
 # coverage run unitTest.py
-# coverage report (focus on first 2 lines)
 # coverage report
-#  Name                                                                                   Stmts   Miss  Cover
-#  ----------------------------------------------------------------------------------------------------------
-#  optionCalculation.py                                                                      73     55    25%
-#  retrieveYahooData.py                                                                      31     16    48%
-#  writeToHDFS.py                                                                            10      4    60%
-
+# Name                                                                                   Stmts   Miss  Cover
+# ----------------------------------------------------------------------------------------------------------
+# optionCalculation.py                                                                      82     58    29%
+# optionCalculationSpark.py                                                                 97     73    25%
+# retrieveYahooData.py                                                                      39      9    77%
+# writeToHDFS.py                                                                            10      4    60%                                                                           10      4    60%
+# ----------------------------------------------------------------------------------------------------------
+# coverage                                                                  (29 + 25 + 77 + 60) / 4 = 47.75%
 
 class unitTestReadlist(unittest.TestCase):
     def test_call_payoff(self):
