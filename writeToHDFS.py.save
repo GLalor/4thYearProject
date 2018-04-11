@@ -1,0 +1,20 @@
+import findspark
+
+findspark.init("/home/gpucalc/spark-2.2.1-bin-hadoop2.7")
+from pyspark.sql import SparkSession, SQLContext
+from pyspark.sql.types import *
+sparkSession = SparkSession.builder.appName(
+    "option-pricer-write-to-hadoop").getOrCreate()
+
+spark.sparkContext.hadoopConfiguration.set("fs.azure", "org.apache.hadoop.fs.azure.NativeAzureFileSystem")
+spark.sparkContext.hadoopConfiguration.set("fs.azure.account.key.yourAccount.blob.core.windows.net", "yourKey ")
+
+val baseDir = "wasb[s]://BlobStorageContainer@yourUser.blob.core.windows.net/"
+
+# change 'E:\ProjectDB' to a suitable drive on computer
+def writeResultHive():
+    option_prices_data = sparkSession.read.json(baseDire)
+    option_prices_data.write.save('E:\ProjectDB', format='json', mode='append')
+    #  USE TO TEST DB
+#    resultsHiveDF = sparkSession.read.format('json').load(baseDir)
+#    resultsHiveDF.show(1)
