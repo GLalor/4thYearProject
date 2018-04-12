@@ -15,7 +15,7 @@ College 4th/Final year project
 To run full program use `python startCalculation.py` <br />
 Please see sample output below: <br />
 
-![alt text](https://github.com/GLalor/Vanilla-Option-Pricer/blob/master/output.PNG "Sample output")
+![alt text](https://github.com/GLalor/Vanilla-Option-Pricer/blob/master/Images/output.PNG "Sample output")
 
 
 ## TO RUN MULTIPROSS branch
