@@ -27,7 +27,7 @@ def main(ticker, riskFreeRates):
     data = retrieveYahooData.main(ticker)
     if data is not None and data is not False:
         option_prices['Ticker'] = ticker
-        option_prices['Risk Free Rates'] = risk_free_rate
+        option_prices['RiskFreeRates'] = risk_free_rate
         # Cutting down on loops
         #data['optionChain']['result'][0]['expirationDates']
         # Test if is regularMarketPrice present will move to check if date is present in experationDates when working with dates
