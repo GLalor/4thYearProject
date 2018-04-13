@@ -5,6 +5,7 @@ import getSNPList
 import riskRateRetrieval
 import optionCalculationGPU
 
+
 def main():
     start_time = time.time()
     printDescription()
@@ -12,8 +13,8 @@ def main():
     rates = riskRateRetrieval.main()
     for item in data['members']:
         print(item['sym'])
-        #optionCalculation.main(item['sym'], rates) # Calculates using CPU
-        optionCalculationGPU.main(item['sym'], rates) # Calculates using GPU
+        # optionCalculation.main(item['sym'], rates) # Calculates using CPU
+        optionCalculationGPU.main(item['sym'], rates)  # Calculates using GPU
     print("******** finsihed in %s seconds ********" %
           (time.time() - start_time))
 

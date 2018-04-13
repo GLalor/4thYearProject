@@ -15,6 +15,7 @@ call_results = {}
 put_results = {}
 priceResults = []
 
+
 def main(ticker, riskFreeRates):
     print(ticker)
     option_type = "not set"
@@ -23,14 +24,15 @@ def main(ticker, riskFreeRates):
     volatility = .3672                  # sigma i.e. volatility of underlying stock
     expires = 55  # Number of days until maturity date
     results = {}
-    risk_free_rate = riskFreeRates # risk free rate from fed
+    risk_free_rate = riskFreeRates  # risk free rate from fed
     data = retrieveYahooData.main(ticker)
     if data is not None and data is not False:
         option_prices['Ticker'] = ticker
         option_prices['RiskFreeRates'] = risk_free_rate
         # Cutting down on loops
-        #data['optionChain']['result'][0]['expirationDates']
-        # Test if is regularMarketPrice present will move to check if date is present in experationDates when working with dates
+        # data['optionChain']['result'][0]['expirationDates']
+        # Test if is regularMarketPrice present will move to check if date is
+        # present in experationDates when working with dates
         if "regularMarketPrice" in data['optionChain']['result'][0]['quote']:
             current_value = data['optionChain']['result'][0]['quote']['regularMarketPrice']
             data = data['optionChain']['result'][0]['options']
@@ -39,37 +41,39 @@ def main(ticker, riskFreeRates):
             # Assigning variables for calc and running sim
             for call in calls:
                 option_type = "Call"
-                strike_price = call['strike']           # S(T) price at maturity
-                results['StrikePrice'] = strike_price 
+                # S(T) price at maturity
+                strike_price = call['strike']
+                results['StrikePrice'] = strike_price
                 volatility = call['impliedVolatility']
                 results['Volatility'] = volatility
                 dt = datetime.datetime.fromtimestamp(
-                call['expiration']) - datetime.datetime.now()
-                expires = dt.days+ 1 # doesnt run on the exp date so plus 1 to account for that
+                    call['expiration']) - datetime.datetime.now()
+                expires = dt.days + 1  # doesnt run on the exp date so plus 1 to account for that
                 option_prices['NumberOfDays'] = expires
                 option_prices['ExpirationDate'] = datetime.datetime.fromtimestamp(
-                call['expiration']).strftime('%Y-%m-%d')
+                    call['expiration']).strftime('%Y-%m-%d')
                 for rate in risk_free_rate:
                     results['RiskFreeRate'] = rate
                     runSimulaion(option_type, strike_price, current_value,
-                                    volatility, rate, expires, ticker)
+                                 volatility, rate, expires, ticker)
                     results[option_type] = call_results.copy()
                     priceResults.append(results.copy())
             results = {}
             for put in puts:
                 option_type = "Put"
-                strike_price = put['strike']            # S(T) price at maturity
-                results['StrikePrice'] = strike_price 
+                # S(T) price at maturity
+                strike_price = put['strike']
+                results['StrikePrice'] = strike_price
                 volatility = put['impliedVolatility']
                 results['Volatility'] = volatility
                 dt = datetime.datetime.fromtimestamp(
-                put['expiration']) - datetime.datetime.now()
-                expires = dt.days + 1 # doesnt run on the exp date so plus 1 to account for that
+                    put['expiration']) - datetime.datetime.now()
+                expires = dt.days + 1  # doesnt run on the exp date so plus 1 to account for that
                 option_prices['NumberOfDays'] = expires
                 for rate in risk_free_rate:
                     results['RiskFreeRate'] = rate
                     runSimulaion(option_type, strike_price, current_value,
-                                    volatility, rate, expires, ticker)
+                                 volatility, rate, expires, ticker)
                     results[option_type] = put_results.copy()
                     priceResults.append(results.copy())
             option_prices['Prices'] = priceResults
@@ -85,7 +89,15 @@ def main(ticker, riskFreeRates):
 
     return option_prices
 
-def runSimulaion(option_type, strike_price, current_value, volatility, rate, expires, ticker):
+
+def runSimulaion(
+        option_type,
+        strike_price,
+        current_value,
+        volatility,
+        rate,
+        expires,
+        ticker):
     start_date = datetime.date.today()
     num_simulations = 10000
     option_prices = []
@@ -101,8 +113,15 @@ def runSimulaion(option_type, strike_price, current_value, volatility, rate, exp
             T = i / 365               # days in the future
             times.append(i)
             for j in range(num_simulations):
-                sim_results.append(sim_option_price(time.time() + j, current_value,
-                                                    rate, volatility, T, strike_price, option_type))
+                sim_results.append(
+                    sim_option_price(
+                        time.time() + j,
+                        current_value,
+                        rate,
+                        volatility,
+                        T,
+                        strike_price,
+                        option_type))
             # e to the power of ()
             discount_factor = math.exp(-rate * T)
             option_prices.append(
@@ -111,12 +130,14 @@ def runSimulaion(option_type, strike_price, current_value, volatility, rate, exp
                 call_results[(
                     str(start_date + datetime.timedelta(days=i)))] = option_prices[i - 1]
                 # print(ticker, " ", option_type, " ", "Option Price ",
-                # option_prices[i - 1], " at ", start_date + datetime.timedelta(days=i))
+                # option_prices[i - 1], " at ", start_date +
+                # datetime.timedelta(days=i))
             else:
-                put_results[(
-                    str(start_date + datetime.timedelta(days=i)))] = option_prices[i - 1]
+                put_results[(str(start_date + datetime.timedelta(days=i)))
+                            ] = option_prices[i - 1]
                 # print(ticker, " ", option_type, " ", "Option Price ",
-                # option_prices[i - 1], " at ", start_date + datetime.timedelta(days=i))
+                # option_prices[i - 1], " at ", start_date +
+                # datetime.timedelta(days=i))
 
 
 def call_payoff(asset_price, strike_price):
@@ -129,7 +150,14 @@ def put_payoff(asset_price, strike_price):
 # simulate the option price
 
 
-def sim_option_price(seed, current_value, risk_free_rate, volatility, T, strike_price, option_type):
+def sim_option_price(
+        seed,
+        current_value,
+        risk_free_rate,
+        volatility,
+        T,
+        strike_price,
+        option_type):
     random.seed(seed)
     asset_price = current_value * \
         math.exp((risk_free_rate - .5 * volatility**2) * T +
@@ -138,6 +166,7 @@ def sim_option_price(seed, current_value, risk_free_rate, volatility, T, strike_
         return call_payoff(asset_price, strike_price)
     else:
         return put_payoff(asset_price, strike_price)
+
 
 # Stops code being run on import
 if __name__ == "__main__":

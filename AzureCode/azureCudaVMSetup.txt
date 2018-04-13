@@ -1,0 +1,57 @@
+nvida cuda on NC6 k80 azure instance
+tutorial link: https://gist.github.com/bzamecnik/b0c342d22a2a21f6af9d10eba3d4597b
+
+wget http://us.download.nvidia.com/tesla/375.66/nvidia-diag-driver-local-repo-ubuntu1604_375.66-1_amd64.deb
+sudo dpkg -i nvidia-diag-driver-local-repo-ubuntu1604_375.66-1_amd64.deb
+sudo apt-get update
+sudo apt-get install cuda-drivers
+sudo reboot
+
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_8.0.61-1_amd64.deb
+sudo dpkg -i cuda-repo-ubuntu1604_8.0.61-1_amd64.deb
+sudo apt-get update
+sudo apt-get install cuda
+(skip cuDNN straight to test)
+sudo reboot
+nvidia-smi
+
+sudo apt install nvidia-cuda-toolkit (needed for pycuda install)
+sudo apt-get build-dep python3-lxml (needed for pycuda install)
+sudo apt-get install libxml2-dev libxslt-dev python-dev (needed for pycuda install) 
+sudo apt install g++-5 (needed to compile code for gpu)
+
+**pip install
+sudo apt-get install python3-setuptools
+sudo easy_install3 pip
+
+** JAVA
+sudo apt-get install default-jre
+sudo update-alternatives --config java (copy output)
+sudo nano /etc/environment (create JAVA_HOME and paste previous output)
+/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java
+
+
+** Spark 
+wget http://mirrors.whoishostingthis.com/apache/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz
+tar -xvzf spark-2.2.1-bin-hadoop2.7.tgz
+sudo apt install maven
+in spark /jars
+wget http://central.maven.org/maven2/org/apache/hadoop/hadoop-azure/2.7.1/hadoop-azure-2.7.1.jar
+wget http://central.maven.org/maven2/com/microsoft/azure/azure-storage/3.0.0/azure-storage-3.0.0.jar
+wget http://central.maven.org/maven2/org/apache/hadoop/hadoop-azure/2.7.3/hadoop-azure-2.7.3.jar
+
+sudo apt install openjdk-8-jdk-headless
+git clone git://github.com/Azure/azure-storage-java.git
+cd ./azure-storage-java
+mvn compile
+
+
+** INSTALL python libs
+sudo python3 -m pip install findspark
+sudo python3 -m pip install quandl
+sudo python3 -m pip install numpy
+sudo python3 -m pip install pycuda
+
+
+
+ "wasb://optionpricerspark-2018-03-31t10-36-01-023z@optiondatastorage.blob.core.windows.net/sparkData/"

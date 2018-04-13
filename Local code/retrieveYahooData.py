@@ -13,7 +13,7 @@ def main(ticker):
             data = urlopen(url)
             data = json.loads(data.read().decode())
             return data
-        return False # false if url is false
+        return False  # false if url is false
     except urllib.error.HTTPError as err:
         if err.code == 404:
             return False
@@ -31,12 +31,13 @@ def createYahooUrlWithDate(optionTicker):
     expDate = 0
     if expirationDates:
         for item in expirationDates:
-            dt = datetime.datetime.fromtimestamp(item) - datetime.datetime.now()
+            dt = datetime.datetime.fromtimestamp(
+                item) - datetime.datetime.now()
             if dt.days > 0:  # should run the day before but is seen as 0 days and number of hours
                 expDate = item
                 break
         return url + "?date=" + str(expDate)
-    return False # false if no expiration dates hence no options
+    return False  # false if no expiration dates hence no options
 
 
 # Stops code being run on import

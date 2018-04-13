@@ -4,8 +4,8 @@ import time
 import getSNPList
 import riskRateRetrieval
 import optionCalculationGPU
-import writeToHDFS
 import deleteOldBlobsFiles
+
 
 def main():
     start_time = time.time()
@@ -16,7 +16,6 @@ def main():
     for item in data['members']:
         print(item['sym'])
         optionCalculationGPU.main(item['sym'], rates)
-    writeToHDFS.writeResultHive()
     print("******** finsihed in %s seconds ********" %
           (time.time() - start_time))
 

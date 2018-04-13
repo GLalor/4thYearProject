@@ -18,7 +18,9 @@ from urllib.request import urlopen
 # retrieveYahooData.py                                                                      39      9    77%
 # writeToHDFS.py                                                                            10      4    60%                                                                           10      4    60%
 # ----------------------------------------------------------------------------------------------------------
-# coverage                                                                  (29 + 25 + 77 + 60) / 4 = 47.75%
+# coverage
+# (29 + 25 + 77 + 60) / 4 = 47.75%
+
 
 class unitTestReadlist(unittest.TestCase):
     def test_call_payoff(self):
@@ -71,24 +73,30 @@ class unitTestReadlist(unittest.TestCase):
                 expDate = str(item)
                 break
         self.assertEqual(
-            "https://query2.finance.yahoo.com/v7/finance/options/MMM?date="+expDate, result)
+            "https://query2.finance.yahoo.com/v7/finance/options/MMM?date=" +
+            expDate,
+            result)
 
     def test_createYahooUrl_invalid_ticker(self):
         self.assertRaises(urllib.error.HTTPError,
                           retrieveYahooData.createYahooUrlWithDate, "x12")
-    
+
     def test_createYahooUrl_invalid_data(self):
         result = retrieveYahooData.main('q')
         self.assertEqual(False, result)
-    
+
     def test_fullstop_removal(self):
-        data = urlopen("https://query2.finance.yahoo.com/v7/finance/options/BFB")
+        data = urlopen(
+            "https://query2.finance.yahoo.com/v7/finance/options/BFB")
         data = json.loads(data.read().decode())
-        if not data['optionChain']['result'][0]['expirationDates']: # BFB doesnt always have options and return false if expiration date is empty so set to false to confirm this
+        # BFB doesnt always have options and return false if expiration date is
+        # empty so set to false to confirm this
+        if not data['optionChain']['result'][0]['expirationDates']:
             data = False
         ticker = "BF.B"
         result = retrieveYahooData.main(ticker)
         self.assertEqual(data, result)
+
 
 if __name__ == '__main__':
     unittest.main()
