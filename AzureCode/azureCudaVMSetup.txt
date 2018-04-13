@@ -27,8 +27,8 @@ sudo easy_install3 pip
 ** JAVA
 sudo apt-get install default-jre
 sudo update-alternatives --config java (copy output)
-sudo nano /etc/environment (create JAVA_HOME and paste previous output)
-/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/bin/java
+export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64/jre"
+
 
 
 ** Spark 
@@ -52,6 +52,6 @@ sudo python3 -m pip install quandl
 sudo python3 -m pip install numpy
 sudo python3 -m pip install pycuda
 
-
+	
 
  "wasb://optionpricerspark-2018-03-31t10-36-01-023z@optiondatastorage.blob.core.windows.net/sparkData/"

@@ -1,0 +1,58 @@
+**pip install
+sudo apt-get install python3-setuptools
+sudo easy_install3 pip
+
+** JAVA
+sudo apt-get install default-jre
+sudo update-alternatives --config java (copy output)
+export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64/jre"
+
+
+** Spark 
+wget http://mirrors.whoishostingthis.com/apache/spark/spark-2.2.1/spark-2.2.1-bin-hadoop2.7.tgz
+tar -xvzf spark-2.2.1-bin-hadoop2.7.tgz
+sudo apt install maven
+in spark /jars
+wget http://central.maven.org/maven2/org/apache/hadoop/hadoop-azure/2.7.1/hadoop-azure-2.7.1.jar
+wget http://central.maven.org/maven2/com/microsoft/azure/azure-storage/3.0.0/azure-storage-3.0.0.jar
+wget http://central.maven.org/maven2/org/apache/hadoop/hadoop-azure/2.7.3/hadoop-azure-2.7.3.jar
+
+
+sudo apt install openjdk-8-jdk-headless
+git clone git://github.com/Azure/azure-storage-java.git
+cd ./azure-storage-java
+mvn compile
+
+
+** INSTALL python libs
+sudo python3 -m pip install findspark
+sudo python3 -m pip install quandl
+sudo python3 -m pip install numpy
+sudo python3 -m pip install matplotlib
+sudo python3 -m pip install jupyter
+sudo python3 -m pip install azure-storage-blob
+sudo python3 -m pip install azure-storage-file
+sudo python3 -m pip install azure-storage-queue
+sudo apt-get install openssl
+
+** Jupyter setup
+jupyter notebook --generate-config
+
+python 
+    from notebook.auth import passwd
+    passwd() # enter password wanted here save for later
+    # sample output 'sha1:67c9e60bb8b6:9ffede0825894254b2e042ea597d771089e11aed'
+
+# in visuals dir
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout mykey.key -out mycert.pem
+cd ~/.jupyter
+sudo nano jupyter_notebook_config.py
+EDIT AS BELOW
+    c.NotebookApp.certfile = u'/home/visuals/mycert.pem'
+    c.NotebookApp.keyfile = u'/home/visuals/mykey.key'
+    c.NotebookApp.ip = '*'
+    c.NotebookApp.password = u'sha1:bcd259ccf...<your hashed password here>' # generated in python earlier
+    c.NotebookApp.open_browser = False
+
+    # It is a good idea to set a known, fixed port for server access
+    c.NotebookApp.port = 9999

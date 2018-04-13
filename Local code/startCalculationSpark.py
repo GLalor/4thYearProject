@@ -44,7 +44,7 @@ def main():
 
 
 def printDescription():
-    print("Program to retrive and print the ticker symbols of stocks in S and P 500 list")
+    print("Program to calculate option prices for each company in S and P 500 list based of data retrieved from a Yahoo api")
 
 
 # Stops code being run on import

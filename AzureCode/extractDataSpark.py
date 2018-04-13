@@ -1,5 +1,5 @@
 import findspark
-findspark.init("C:\spark-2.2.1-bin-hadoop2.7")
+findspark.init("/home/visuals/spark-2.2.1-bin-hadoop2.7")
 from pyspark.sql import SparkSession, SQLContext
 from pyspark.sql.types import *
 sparkSession = SparkSession.builder.appName(
@@ -11,7 +11,7 @@ sparkSession._jsc.hadoopConfiguration().set(
     "fs.azure.account.key.optiondatastorage.blob.core.windows.net",
     "X6s7Fmxhb6TM/+OhvIl0rNHhOQebO701I1dVdzaW6pKvdi9uVKFgRyW771hrvfCf1TgRA9v+5D7p76pw9ROR6g==")
 
-baseDir = "wasb://optiondata-2018-04-10t08-21-24-836z@optiondatastorage.blob.core.windows.net/GPUData/"
+baseDir = "wasb://optiondata-2018-04-10t08-21-24-836z@optiondatastorage.blob.core.windows.net/db/"
 
 resultsHiveDF = sparkSession.read.format('json').load(baseDir)
 resultsHiveDF.createOrReplaceTempView("optionData")
@@ -22,7 +22,8 @@ def getTickerSymbols():
     tickers = sparkSession.sql("SELECT Ticker FROM optionData").collect()
     tickerSymbols = []
     for i in tickers:  # remove Row(Ticker=) from ticker
-        tickerSymbols.append(i['Ticker'])
+        if i['Ticker'] != None:
+            tickerSymbols.append(i['Ticker'])
     tickerSymbols.sort()
     return tickerSymbols
 
@@ -35,7 +36,7 @@ def getNumberOfDays(ticker):
         ticker +
         "'").collect()
     numDaysArr = []
-    for i in range(1, numOfDays[0]['NumberOfDays'] + 2):
+    for i in range(1, numOfDays[0]['NumberOfDays'] + 1):
         numDaysArr.append(i)
     return numDaysArr
 
