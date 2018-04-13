@@ -13,23 +13,30 @@ from urllib.request import urlopen
 # coverage report
 # Name                                                                                   Stmts   Miss  Cover
 # ----------------------------------------------------------------------------------------------------------
-# optionCalculation.py                                                                      82     58    29%
+# optionCalculation.py                                                                      82     58    30%
 # optionCalculationSpark.py                                                                 97     73    25%
-# retrieveYahooData.py                                                                      39      9    77%
+# retrieveYahooData.py                                                                      39      9    81%
 # writeToHDFS.py                                                                            10      4    60%                                                                           10      4    60%
 # ----------------------------------------------------------------------------------------------------------
-# coverage
-# (29 + 25 + 77 + 60) / 4 = 47.75%
+# coverage                                                                     (29 + 25 + 77 + 60) / 4 = 49%
 
 
 class unitTestReadlist(unittest.TestCase):
-    def test_call_payoff(self):
-        result = optionCalculation.call_payoff(20, 20)
+    def test_call_payoff_negative(self):
+        result = optionCalculation.call_payoff(20, 30)
         self.assertEqual(0.0, result)
 
-    def test_put_payoff(self):
-        result = optionCalculation.put_payoff(20, 20)
+    def test_call_payoff_positive(self):
+        result = optionCalculation.call_payoff(60, 50)
+        self.assertEqual(10.0, result)
+
+    def test_put_payoff_negative(self):
+        result = optionCalculation.put_payoff(30, 20)
         self.assertEqual(0.0, result)
+
+    def test_put_payoff_positive(self):
+        result = optionCalculation.put_payoff(50, 60)
+        self.assertEqual(10.0, result)
 
     def test_sim_option_price_call(self):
         result = optionCalculation.sim_option_price(
@@ -41,13 +48,22 @@ class unitTestReadlist(unittest.TestCase):
             1, 50, 2.1024, .367, 70, 77, "Put")
         self.assertEqual(0.0, result)
 
-    def test_call_payoff_spark(self):
-        result = optionCalculationSpark.call_payoff(20, 20)
+    def test_call_payoff_spark_negative(self):
+        result = optionCalculationSpark.call_payoff(50, 70)
         self.assertEqual(0.0, result)
 
-    def test_put_payoff_spark(self):
-        result = optionCalculationSpark.put_payoff(20, 20)
+    def test_put_payoff_spark_negative(self):
+        result = optionCalculationSpark.put_payoff(10, 5)
         self.assertEqual(0.0, result)
+
+    def test_call_payoff_spark_positive(self):
+        result = optionCalculationSpark.call_payoff(6, 3)
+        self.assertEqual(3.0, result)
+
+    def test_put_payoff_spark_positive(self):
+        result = optionCalculationSpark.put_payoff(100, 120)
+        self.assertEqual(20.0, result)
+
 
     def test_sim_option_price_call_spark(self):
         result = optionCalculationSpark.sim_option_price(
@@ -82,7 +98,7 @@ class unitTestReadlist(unittest.TestCase):
                           retrieveYahooData.createYahooUrlWithDate, "x12")
 
     def test_createYahooUrl_invalid_data(self):
-        result = retrieveYahooData.main('q')
+        result = retrieveYahooData.main('156')
         self.assertEqual(False, result)
 
     def test_fullstop_removal(self):
